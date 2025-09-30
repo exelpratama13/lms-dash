@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('score');
             $table->boolean('passed')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

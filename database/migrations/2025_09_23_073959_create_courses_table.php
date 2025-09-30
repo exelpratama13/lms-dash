@@ -21,6 +21,7 @@ return new class extends Migration
             $table->boolean('is_popular');
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

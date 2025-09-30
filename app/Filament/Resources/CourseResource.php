@@ -24,11 +24,6 @@ class CourseResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-
-                Forms\Components\TextInput::make('slug')
-                    ->required()
-                    ->unique(ignoreRecord: true),
-
                 Forms\Components\FileUpload::make('thumbnail')
                     ->image()
                     ->directory('thumbnails'),

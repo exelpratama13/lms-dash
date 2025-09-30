@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('job')->nullable();
             $table->text('about')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('payment_type')->nullable();
             $table->string('proof')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

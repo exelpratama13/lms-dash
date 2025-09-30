@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 class Course extends Model
 {
@@ -24,6 +25,12 @@ class Course extends Model
     protected $casts = [
         'is_popular' => 'boolean',
     ];
+
+    public function setNameAttribute($value)
+    {
+        $this->attributes['name'] = $value;
+        $this->attributes['slug'] = Str::slug($value);
+    }
 
     public function category(): BelongsTo
     {
@@ -64,5 +71,4 @@ class Course extends Model
     {
         return $this->hasMany(Transaction::class);
     }
-
 }

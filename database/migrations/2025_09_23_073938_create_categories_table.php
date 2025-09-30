@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('icon');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

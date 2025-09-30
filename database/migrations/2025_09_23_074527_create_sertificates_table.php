@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('course_batch_id')->constrained('course_batches')->onDelete('cascade');
             $table->foreignId('course_progress_id')->constrained('course_progresses')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

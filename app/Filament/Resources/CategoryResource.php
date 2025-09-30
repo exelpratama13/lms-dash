@@ -3,42 +3,43 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CategoryResource\Pages;
+use App\Filament\Resources\CategoryResource\RelationManagers;
 use App\Models\Category;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Fieldset;
 use Filament\Tables;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?string $recordTitleAttribute = 'name';
-
+    protected static ?string $navigationGroup = 'Management';
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('name')
-                    ->label('Nama Kategori')
-                    ->required()
-                    ->maxLength(255)
-                    ->reactive()
-                    ->afterStateUpdated(fn (string $state, $set) => $set('slug', Str::slug($state))),
-                TextInput::make('slug')
-                    ->label('Slug')
-                    ->required()
-                    ->maxLength(255),
-                FileUpload::make('icon')
-                    ->label('Ikon')
-                    ->required()
-                    ->image(),
+                //
+                Fieldset::make('Details')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+
+                        Forms\Components\FileUpload::make('icon')
+                            ->image()
+                            ->disk('public')
+                            ->directory('categories')
+                            ->visibility('public')
+                            ->preserveFilenames()
+                            ->required(),
+                    ]),
             ]);
     }
 
@@ -46,25 +47,26 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
+                //
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('slug')
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('icon')
-                    ->label('Ikon')
-                    ->disk('public'),
+                    ->disk('public')
+                    ->rounded()
+                    ->label('Icon'),
             ])
             ->filters([
-                //
+                Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -83,5 +85,13 @@ class CategoryResource extends Resource
             'create' => Pages\CreateCategory::route('/create'),
             'edit' => Pages\EditCategory::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
     }
 }
