@@ -61,7 +61,6 @@ class CourseSectionResource extends Resource
                     ->relationship('course', 'name'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

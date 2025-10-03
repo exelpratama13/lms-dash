@@ -16,7 +16,7 @@ class SertificateResource extends Resource
     protected static ?string $model = Sertificate::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
-    protected static ?string $navigationGroup = 'Courses';
+    // protected static ?string $navigationGroup = 'Courses';
 
     public static function form(Form $form): Form
     {

@@ -48,13 +48,11 @@ class UserResource extends Resource
                     ->imageCropAspectRatio('1:1')
                     ->imagePreviewHeight('100'),
 
-                Forms\Components\Select::make('role')
-                    ->options([
-                        'admin' => 'Admin',
-                        'mentor' => 'Mentor',
-                        'student' => 'Student',
-                    ])
-                    ->required(),
+                Forms\Components\Select::make('roles')
+                    ->label('Role')
+                    // ->multiple()
+                    ->relationship('roles', 'name')
+                    ->preload(),
 
                 Forms\Components\Toggle::make('is_active')
                     ->label('Active')
@@ -77,12 +75,13 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('role')
+                Tables\Columns\TextColumn::make('roles.name')
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'admin' => 'success',
                         'mentor' => 'warning',
                         'student' => 'info',
+                        default => 'gray',
                     }),
 
 

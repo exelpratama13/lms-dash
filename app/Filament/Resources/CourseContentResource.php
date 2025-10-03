@@ -88,3 +88,4 @@ class CourseContentResource extends Resource
         ];
     }
 }
+//baru yee

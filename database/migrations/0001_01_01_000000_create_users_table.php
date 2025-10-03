@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('photo')->nullable();
             $table->string('role')->default('user');
             $table->boolean('is_active')->default(true);
+            $table->rememberToken();
             $table->timestamps();
         });
     }

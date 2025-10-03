@@ -47,7 +47,7 @@ class CourseResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('thumbnail')->square(),
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('slug')->toggleable(),
+                // Tables\Columns\TextColumn::make('slug')->toggleable(),
                 Tables\Columns\TextColumn::make('category.name')->label('Category'),
                 Tables\Columns\IconColumn::make('is_popular')->boolean(),
                 // Tables\Columns\TextColumn::make('created_at')->dateTime(),
