@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Video extends Model
+class CourseVideo extends Model
 {
     use HasFactory;
 
@@ -17,13 +17,13 @@ class Video extends Model
      */
     protected $fillable = [
         'id_youtube',
-        'section_content_id',
+        'course_content_id',
     ];
 
     /**
      * Get the section content that owns the video.
      */
-    public function sectionContent(): BelongsTo
+    public function courseContent(): BelongsTo
     {
         return $this->belongsTo(CourseContent::class);
     }

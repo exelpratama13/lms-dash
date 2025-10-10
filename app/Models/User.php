@@ -26,7 +26,6 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'password',
         'photo',
-        'role',
         'is_active',
     ];
 
@@ -41,6 +40,11 @@ class User extends Authenticatable implements FilamentUser
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    // public function getRoleName(): string
+    // {
+    //     return $this->roles->first()->name ?? 'user';
+    // }
 
     public function mentoredCourses(): HasMany
     {
@@ -70,5 +74,10 @@ class User extends Authenticatable implements FilamentUser
     public function sertificates(): HasMany
     {
         return $this->hasMany(Sertificate::class);
+    }
+
+    public function courseMentors(): HasMany
+    {
+        return $this->hasMany(CourseMentor::class, 'user_id');
     }
 }

@@ -35,16 +35,20 @@ class CourseMentorResource extends Resource
                 Select::make('user_id')
                     ->label('Mentor')
                     ->options(
-                        User::where('role', 'mentor')
-                            ->pluck('name', 'id')
+                        User::role('mentor')->pluck('name', 'id')
                     )
-                    ->searchable()
+                    // ->searchable()
                     ->required(),
                 Select::make('course_id')
                     ->label('Course')
                     ->options(Course::all()->pluck('name', 'id'))
                     ->searchable()
                     ->required(),
+
+                Select::make('category_id')
+                    ->relationship('category', 'name')
+                    ->required(),
+
                 TextInput::make('job')
                     ->label('Job')
                     ->required()
@@ -68,16 +72,25 @@ class CourseMentorResource extends Resource
                     ->label('Course')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('job')
-                    ->label('Job')
+
+                TextColumn::make('category.name')->label('Category')
+                ->label('Category')
                     ->searchable()
                     ->sortable(),
+
+                // TextColumn::make('job')
+                //     ->label('Job')
+                //     ->searchable()
+                //     ->sortable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('category')->relationship('category', 'name'),
+
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
