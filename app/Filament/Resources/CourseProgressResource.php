@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CourseProgressResource\Pages;
 use App\Models\CourseProgress;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -23,6 +24,10 @@ class CourseProgressResource extends Resource
             ->schema([
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name')
+                    ->options(
+                        User::role('student')
+                            ->pluck('name', 'id')
+                    )
                     ->required(),
 
                 Forms\Components\Select::make('course_id')

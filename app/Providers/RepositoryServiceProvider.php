@@ -15,6 +15,10 @@ use App\Repositories\MentorRepository;
 use App\Services\CategoryService;
 use App\Services\CourseService;
 use App\Services\MentorService;
+use App\Interfaces\CourseSectionRepositoryInterface;
+use App\Repositories\CourseSectionRepository;
+use App\Interfaces\CourseSectionServiceInterface;
+use App\Services\CourseSectionService;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -28,6 +32,16 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             CourseServiceInterface::class,
             CourseService::class
+        );
+        
+        // Bind Course Section & Content
+        $this->app->bind(
+            CourseSectionRepositoryInterface::class,
+            CourseSectionRepository::class
+        );
+        $this->app->bind(
+            CourseSectionServiceInterface::class,
+            CourseSectionService::class
         );
 
         // Bind Category

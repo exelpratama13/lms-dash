@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SertificateResource\Pages;
 use App\Models\Sertificate;
+use App\Models\User;
 use App\Models\CourseProgress;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -25,6 +26,10 @@ class SertificateResource extends Resource
                 Forms\Components\Select::make('user_id')
                     ->label('User')
                     ->relationship('user', 'name')
+                    ->options(
+                        User::role('student')
+                            ->pluck('name', 'id')
+                    )
                     ->required(),
 
                 Forms\Components\TextInput::make('code')

@@ -42,14 +42,9 @@ class TransactionResource extends Resource
                 Select::make('user_id')
                     ->label('User')
                     ->options(
-                        User::whereIn('role', ['mentor', 'student'])
+                        User::role(['mentor', 'student'])
                             ->pluck('name', 'id')
                     )
-                    ->searchable()
-                    ->required(),
-                Select::make('pricing_id')
-                    ->label('Pricing Plan')
-                    ->options(Pricing::all()->pluck('name', 'id'))
                     ->searchable()
                     ->required(),
                 Select::make('course_id')
@@ -62,22 +57,54 @@ class TransactionResource extends Resource
                     ->options(CourseBatch::all()->pluck('name', 'id'))
                     ->searchable()
                     ->nullable(),
+                Select::make('pricing_id')
+                    ->label('Pricing Plan')
+                    ->prefix('Rp ')
+                    ->relationship('pricing', 'name')
+                    // ->searchable()
+                    ->preload()
+                    ->required()
+                    // 1. Membuat field ini reaktif
+                    ->live()
+                    // 2. Mengisi Sub Total Amount ketika Pricing Plan berubah
+                    ->afterStateUpdated(function ($state, $set) {
+                        if ($state) {
+                            $pricing = Pricing::find($state);
+                            $price = $pricing ? $pricing->price : 0;
+
+                            // Asumsi Tax Rate 10%
+                            $taxRate = 0.12;
+                            $taxAmount = $price * $taxRate;
+                            $grandTotal = $price + $taxAmount;
+
+                            // Mengisi field Sub Total Amount
+                            $set('sub_total_amount', $price);
+                            // Mengisi field Tax Amount
+                            $set('total_tax_amount', $taxAmount);
+                            // Mengisi field Grand Total Amount
+                            $set('grand_total_amount', $grandTotal);
+                        } else {
+                            // Reset jika tidak ada yang dipilih
+                            $set('sub_total_amount', 0);
+                            $set('total_tax_amount', 0);
+                            $set('grand_total_amount', 0);
+                        }
+                    }),
                 TextInput::make('sub_total_amount')
                     ->label('Sub Total Amount')
-                    ->numeric()
-                    ->required(),
-                TextInput::make('grand_total_amount')
-                    ->label('Grand Total Amount')
+                    ->prefix('Rp ')
                     ->numeric()
                     ->required(),
                 TextInput::make('total_tax_amount')
                     ->label('Total Tax Amount')
                     ->numeric()
-                    ->required(),
-                Toggle::make('is_paid')
-                    ->label('Is Paid')
-                    ->onColor('success')
-                    ->offColor('danger')
+                    ->prefix('Rp ')
+                    ->required()
+                    ->readOnly(),
+                TextInput::make('grand_total_amount')
+                    ->label('Grand Total Amount')
+                    ->prefix('Rp ')
+                    ->numeric()
                     ->required(),
                 TextInput::make('payment_type')
                     ->label('Payment Type')
@@ -85,6 +112,12 @@ class TransactionResource extends Resource
                 TextInput::make('proof')
                     ->label('Proof')
                     ->nullable(),
+                Toggle::make('is_paid')
+                    ->label('Is Paid')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->required(),
+
             ]);
     }
 

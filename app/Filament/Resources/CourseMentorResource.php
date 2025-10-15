@@ -35,7 +35,8 @@ class CourseMentorResource extends Resource
                 Select::make('user_id')
                     ->label('Mentor')
                     ->options(
-                        User::role('mentor')->pluck('name', 'id')
+                        User::role(['mentor', 'admin'], 'web')
+                        ->pluck('name', 'id')
                     )
                     // ->searchable()
                     ->required(),

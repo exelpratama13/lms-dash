@@ -37,6 +37,7 @@ class PricingResource extends Resource
                             ->required(),
                         TextInput::make('price')
                             ->label('Harga (IDR)')
+                            ->prefix('Rp ')
                             ->numeric()
                             ->required(),
                     ])

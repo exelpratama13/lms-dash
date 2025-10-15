@@ -33,7 +33,7 @@ class CourseStudentResource extends Resource
                 Select::make('user_id')
                     ->label('Student')
                     ->options(
-                        User::where('role', 'student')
+                        User::role('student')
                             ->pluck('name', 'id')
                     )
                     ->required(),

@@ -36,7 +36,7 @@ class CourseBatchResource extends Resource
                 Select::make('mentor_id')
                     ->label('Mentor')
                     ->options(
-                        User::where('role', 'mentor')
+                        User::role(['mentor', 'admin'], 'web')
                             ->pluck('name', 'id')
                     )
                     ->searchable()
