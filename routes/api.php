@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\CourseSectionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\MentorController;
+use App\Http\Controllers\Api\PricingController;
+use App\Http\Controllers\Api\TransactionController;
 
 //login
 Route::post('/login', [AuthController::class, 'login']);
@@ -41,7 +43,11 @@ Route::get('/sections/{sectionId}', [CourseSectionController::class, 'showSectio
 Route::get('/sections/{sectionId}/contents', [CourseSectionController::class, 'listContents']);
 Route::get('/contents/{contentId}', [CourseSectionController::class, 'showContent']);
 
+//pricing
+Route::get('courses/{courseId}/pricings', [PricingController::class, 'listPricings']);
 
+//transaction
+Route::post('transactions', [TransactionController::class, 'store'])->middleware('auth:sanctum');
 
 
 

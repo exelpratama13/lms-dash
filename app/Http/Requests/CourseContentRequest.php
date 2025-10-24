@@ -28,8 +28,6 @@ class CourseContentRequest extends FormRequest
     public function rules(): array
     {
         $contentId = $this->route('contentId');
-        // ATURAN VALIDASI HANYA UNTUK FIELD YANG ADA DI $fillable MODEL CourseContent.php:
-        // 'name', 'course_section_id', dan 'content'
         return [
             'name' => ['required', 'string', 'max:255' .$contentId],
             'course_section_id' => ['required', 'exists:course_sections,id'], // Memastikan Section ID valid

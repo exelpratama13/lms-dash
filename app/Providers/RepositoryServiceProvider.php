@@ -18,7 +18,15 @@ use App\Services\MentorService;
 use App\Interfaces\CourseSectionRepositoryInterface;
 use App\Repositories\CourseSectionRepository;
 use App\Interfaces\CourseSectionServiceInterface;
+use App\Interfaces\PricingRepositoryInterface;
+use App\Interfaces\PricingServiceInterface;
+use App\Interfaces\TransactionRepositoryInterface;
+use App\Interfaces\TransactionServiceInterface;
+use App\Repositories\PricingRepository;
+use App\Repositories\TransactionRepository;
 use App\Services\CourseSectionService;
+use App\Services\PricingService;
+use App\Services\TransactionService;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -33,7 +41,7 @@ class RepositoryServiceProvider extends ServiceProvider
             CourseServiceInterface::class,
             CourseService::class
         );
-        
+
         // Bind Course Section & Content
         $this->app->bind(
             CourseSectionRepositoryInterface::class,
@@ -56,14 +64,33 @@ class RepositoryServiceProvider extends ServiceProvider
 
         // Bind Mentor
         $this->app->bind(
-            MentorRepositoryInterface::class, 
+            MentorRepositoryInterface::class,
             MentorRepository::class
         );
         $this->app->bind(
             MentorServiceInterface::class,
             MentorService::class
         );
-        
+
+        //Bind Pricing
+        $this->app->bind(
+            PricingServiceInterface::class,
+            PricingService::class
+        );
+        $this->app->bind(
+            PricingRepositoryInterface::class,
+            PricingRepository::class
+        );
+
+        //Bind Transaction
+        $this->app->bind(
+            TransactionServiceInterface::class,
+            TransactionService::class
+        );
+        $this->app->bind(
+            TransactionRepositoryInterface::class,
+            TransactionRepository::class
+        );
     }
 
     public function boot(): void

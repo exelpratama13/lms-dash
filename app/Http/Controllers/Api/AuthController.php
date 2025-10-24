@@ -20,7 +20,7 @@ class AuthController extends Controller
             $user = Auth::user();
 
             // 1. Otorisasi Role: Hanya izinkan Admin/Mentor
-            if (!$user->hasAnyRole(['admin', 'mentor'])) { 
+            if (!$user->hasAnyRole(['admin', 'mentor', 'student'])) { 
                 Auth::logout();
                 return response()->json([
                     'message' => 'Unauthorized role. Access restricted to Admin or Mentor.',
