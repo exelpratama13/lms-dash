@@ -15,6 +15,7 @@ class CourseBatch extends Model
         'name',
         'mentor_id',
         'course_id',
+        'quota',
         'start_date',
         'end_date',
     ];

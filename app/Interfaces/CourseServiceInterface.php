@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 interface CourseServiceInterface
 {
     public function getCourseCatalog(): Collection;
-    
+
     public function getPopularCoursesData(): Collection;
 
     public function getCourseDetail(string $slug): ?Course;
@@ -17,7 +17,7 @@ interface CourseServiceInterface
 
     public function createNewCourse(array $data): Course;
 
-     public function updateCourse(int $id, array $data): Course;
+    public function updateCourse(int $id, array $data): Course;
 
     public function deleteCourse(int $id): bool;
 }

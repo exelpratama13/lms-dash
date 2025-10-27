@@ -12,7 +12,7 @@ class CourseRepository implements CourseRepositoryInterface
     public function getPopularCourses(): Collection
     {
         return Course::with('category:id,name,slug')
-            ->where('is_popular', true) 
+            ->where('is_popular', true)
             ->get();
     }
 
@@ -29,7 +29,7 @@ class CourseRepository implements CourseRepositoryInterface
         ])
             ->where('slug', $slug)
             // Tambahkan kondisi untuk memastikan course aktif/dipublikasikan (jika ada)
-            // ->where('is_published', true) 
+            // ->where('is_published', true)
             ->first();
     }
 
@@ -41,12 +41,12 @@ class CourseRepository implements CourseRepositoryInterface
             // Urutkan berdasarkan nama atau created_at terbaru
             ->orderBy('name')
             ->get([
-                'id', 
-                'name', 
-                'slug', 
-                'thumbnail', 
-                'about', 
-                'category_id', 
+                'id',
+                'name',
+                'slug',
+                'thumbnail',
+                'about',
+                'category_id',
                 'is_popular'
             ]);
     }
@@ -82,7 +82,7 @@ class CourseRepository implements CourseRepositoryInterface
         return Course::create($data);
     }
 
-     public function find(int $id): ?Course
+    public function find(int $id): ?Course
     {
         return Course::find($id); // Memanggil metode find() dari Model Eloquent
     }
@@ -97,5 +97,10 @@ class CourseRepository implements CourseRepositoryInterface
     public function delete(Course $course): bool
     {
         return $course->delete();
+    }
+
+    public function getCourseCount(): int
+    {
+        return Course::count();
     }
 }

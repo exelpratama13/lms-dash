@@ -1,0 +1,93 @@
+http://127.0.0.1:8000/api/courses/popular
+
+{
+  "status": "success",
+  "message": "Popular courses retrieved successfully",
+  "data": [
+    {
+      "id": 1,
+      "name": "Assumenda quasi iure distinctio.",
+      "slug": "quod-dignissimos-ad-numquam-commodi-vero",
+      "thumbnail": "https://via.placeholder.com/640x480.png",
+      "about": "Fuga omnis vero non dolorum. Voluptatum ut perferendis eveniet. Enim sapiente aperiam voluptatem aliquid voluptatem quia. Qui possimus accusantium est quam. Est laudantium autem eaque.",
+      "is_popular": true,
+      "category_id": 1,
+      "created_at": "2025-10-24T04:10:56.000000Z",
+      "updated_at": "2025-10-24T04:10:56.000000Z",
+      "deleted_at": null,
+      "category": {
+        "id": 1,
+        "name": "Web Development",
+        "slug": "web-development"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Quibusdam sapiente aut maiores.",
+      "slug": "ipsa-qui-reiciendis-consectetur-rerum-voluptatem-sapiente",
+      "thumbnail": "https://via.placeholder.com/640x480.png",
+      "about": "Non ipsam et culpa. Est placeat voluptas et ut officia quo et. Nihil totam voluptates doloremque quam. Nulla quia distinctio natus.",
+      "is_popular": true,
+      "category_id": 1,
+      "created_at": "2025-10-24T04:10:56.000000Z",
+      "updated_at": "2025-10-24T04:10:56.000000Z",
+      "deleted_at": null,
+      "category": {
+        "id": 1,
+        "name": "Web Development",
+        "slug": "web-development"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Illum beatae consequuntur et.",
+      "slug": "qui-totam-nesciunt-natus-reiciendis-repellendus",
+      "thumbnail": "https://via.placeholder.com/640x480.png",
+      "about": "Et minus voluptas perferendis laudantium et voluptates. Tempore ratione eaque possimus odio cum itaque dolor. Distinctio quasi itaque illo aut fuga ut.",
+      "is_popular": true,
+      "category_id": 1,
+      "created_at": "2025-10-24T04:10:56.000000Z",
+      "updated_at": "2025-10-24T04:10:56.000000Z",
+      "deleted_at": null,
+      "category": {
+        "id": 1,
+        "name": "Web Development",
+        "slug": "web-development"
+      }
+    },
+    {
+      "id": 4,
+      "name": "Aut delectus at facilis.",
+      "slug": "ut-consequatur-vel-recusandae-voluptatem-ullam",
+      "thumbnail": "https://via.placeholder.com/640x480.png",
+      "about": "Omnis totam quod libero incidunt est voluptas sit ratione. Velit magnam pariatur totam sunt rem. Quia soluta delectus consequuntur sit. Corrupti ut sed est.",
+      "is_popular": true,
+      "category_id": 1,
+      "created_at": "2025-10-24T04:10:56.000000Z",
+      "updated_at": "2025-10-24T04:10:56.000000Z",
+      "deleted_at": null,
+      "category": {
+        "id": 1,
+        "name": "Web Development",
+        "slug": "web-development"
+      }
+    },
+    {
+      "id": 5,
+      "name": "Error eveniet consequatur.",
+      "slug": "minima-natus-perspiciatis-quidem-odio-facere-laboriosam",
+      "thumbnail": "https://via.placeholder.com/640x480.png",
+      "about": "Aliquam numquam illo incidunt repudiandae ut voluptate nesciunt. Vitae est quidem quia quasi exercitationem. Qui accusamus at sed nesciunt sit nihil dolore. Rerum dolor dolor provident voluptatem qui et dolores.",
+      "is_popular": true,
+      "category_id": 1,
+      "created_at": "2025-10-24T04:10:56.000000Z",
+      "updated_at": "2025-10-24T04:10:56.000000Z",
+      "deleted_at": null,
+      "category": {
+        "id": 1,
+        "name": "Web Development",
+        "slug": "web-development"
+      }
+    }
+  ]
+}

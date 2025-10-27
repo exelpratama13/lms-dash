@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateCourseRequest;
 use App\Interfaces\CourseServiceInterface; // Panggil Service Interface
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Models\Course;
 
 class CourseController extends Controller
 {
@@ -20,7 +21,7 @@ class CourseController extends Controller
     }
 
     //  * Mengambil daftar semua Course.
-    public function index(): JsonResponse 
+    public function index(): JsonResponse
     {
         try {
             $courses = $this->courseService->getCourseCatalog();
@@ -31,7 +32,6 @@ class CourseController extends Controller
                 'count' => $courses->count(),
                 'data' => $courses,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -52,7 +52,6 @@ class CourseController extends Controller
                 'message' => 'Popular courses retrieved successfully',
                 'data' => $courses,
             ], 200);
-
         } catch (\Exception $e) {
             // Handle error logging
             return response()->json([
@@ -79,7 +78,6 @@ class CourseController extends Controller
                 'message' => 'Course details retrieved successfully',
                 'data' => $course,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -92,7 +90,7 @@ class CourseController extends Controller
     {
         try {
             $courses = $this->courseService->getCoursesByCategorySlug($categorySlug);
-            
+
             if ($courses->isEmpty()) {
                 // Respons 404 jika kategori tidak ada, atau tidak ada course di kategori tersebut
                 return response()->json([
@@ -107,7 +105,6 @@ class CourseController extends Controller
                 'count' => $courses->count(),
                 'data' => $courses,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -115,6 +112,7 @@ class CourseController extends Controller
             ], 500);
         }
     }
+
 
     public function store(StoreCourseRequest $request): JsonResponse
     {
@@ -148,7 +146,6 @@ class CourseController extends Controller
                 'message' => 'Course updated successfully',
                 'data' => $course,
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -166,7 +163,7 @@ class CourseController extends Controller
                 'message' => 'This action is unauthorized.',
             ], 403);
         }
-        
+
         try {
             $this->courseService->deleteCourse($id);
 

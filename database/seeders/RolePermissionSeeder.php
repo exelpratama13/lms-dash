@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -14,25 +12,19 @@ class RolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminRole = Role::create([
-            'name' => 'admin',
-        ]);
+        // Seed roles (ids preserved to match SQL dump)
+        DB::table('roles')->upsert([
+            ['id' => 1, 'name' => 'admin', 'guard_name' => 'web', 'created_at' => '2025-10-23 20:25:23', 'updated_at' => '2025-10-23 20:25:23'],
+            ['id' => 2, 'name' => 'mentor', 'guard_name' => 'web', 'created_at' => '2025-10-23 20:25:23', 'updated_at' => '2025-10-23 20:25:23'],
+            ['id' => 3, 'name' => 'student', 'guard_name' => 'web', 'created_at' => '2025-10-23 20:25:23', 'updated_at' => '2025-10-23 20:25:23'],
+        ], ['id']);
 
-        $mentorRole = Role::create([
-            'name' => 'mentor',
-        ]);
+        // Permissions can be added here if needed. For now we'll keep tables consistent.
 
-        $studentRole = Role::create([
-            'name' => 'student',
-        ]);
-
-
-        $user = User::create([
-            'name' => 'admin',
-            'email' => 'admin@inovindo.com',
-            'password' => bcrypt('admin'),
-        ]);
-
-        $user->assignRole($adminRole);
+        // Assign role to user (model_has_roles)
+        // Example from SQL: role_id=1 for App\Models\User id=2
+        DB::table('model_has_roles')->upsert([
+            ['role_id' => 1, 'model_type' => 'App\\Models\\User', 'model_id' => 2],
+        ], ['role_id', 'model_type', 'model_id']);
     }
 }

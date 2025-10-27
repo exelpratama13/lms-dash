@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\MentorController;
 use App\Http\Controllers\Api\PricingController;
 use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\StatsController;
 
 //login
 Route::post('/login', [AuthController::class, 'login']);
@@ -65,3 +66,7 @@ Route::get('/mentors', [MentorController::class, 'index']);
 Route::get('/mentors/{userId}', [MentorController::class, 'show']);
 Route::get('/mentors/{mentorId}/courses', [MentorController::class, 'coursesTaught']);
 Route::get('/mentors/category/{categorySlug}', [MentorController::class, 'mentorsByCategory']);
+
+
+//stats
+Route::get('/counts', [StatsController::class, 'getCounts']);

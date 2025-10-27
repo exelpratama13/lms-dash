@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('mentor_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('course_id')->constrained('courses')->onDelete('cascade');
+            $table->integer('quota');
             $table->date('start_date');
             $table->date('end_date');
             $table->timestamps();

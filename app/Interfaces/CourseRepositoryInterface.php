@@ -21,7 +21,8 @@ interface CourseRepositoryInterface
 
     public function update(Course $course, array $data): Course;
 
-    public function delete(Course $course): bool; 
+    public function delete(Course $course): bool;
 
-
+    // Return total number of courses
+    public function getCourseCount(): int;
 }

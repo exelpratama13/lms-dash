@@ -13,7 +13,6 @@ class CourseMentor extends Model
     protected $fillable = [
         'user_id',
         'course_id',
-        'category_id',
         'job',
         'about',
     ];
@@ -32,6 +31,4 @@ class CourseMentor extends Model
     {
         return $this->belongsTo(Category::class);
     }
-
-    
 }
