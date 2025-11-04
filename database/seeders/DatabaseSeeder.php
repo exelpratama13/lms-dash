@@ -18,14 +18,23 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             CourseSeeder::class,
             PricingSeeder::class,
+            CoursePricingSeeder::class, // Pivot table
             CourseBatchSeeder::class,
             TransactionSeeder::class,
             CourseSectionSeeder::class,
             CourseContentSeeder::class,
+            CourseAttachmentSeeder::class,
+            CourseVideoSeeder::class,
             QuizSeeder::class,
+            QuestionSeeder::class,
+            QuestionOptionSeeder::class,
             CourseStudentSeeder::class,
             CourseMentorSeeder::class,
             CourseBenefitSeeder::class,
+            QuizAttemptSeeder::class,
+            StudentAnswerSeeder::class,
+            CourseProgressSeeder::class,
+            SertificateSeeder::class,
         ]);
     }
 }

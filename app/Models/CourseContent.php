@@ -25,7 +25,7 @@ class CourseContent extends Model
 
     public function video(): HasOne
     {
-        return $this->hasOne(Video::class);
+        return $this->hasOne(CourseVideo::class);
     }
 
     public function quiz(): HasOne

@@ -24,8 +24,8 @@ class CourseStudentFactory extends Factory
     public function definition()
     {
         return [
-            'user_id' => User::factory(),
-            'course_id' => Course::factory(),
+            'user_id' => User::role('student')->inRandomOrder()->first()->id,
+            'course_id' => Course::inRandomOrder()->first()->id,
         ];
     }
 }

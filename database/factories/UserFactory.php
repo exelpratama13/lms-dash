@@ -13,16 +13,6 @@ class UserFactory extends Factory
 {
     protected static ?string $password;
 
-    /**
-     * Configure the model factory.
-     */
-    public function configure(): static
-    {
-        return $this->afterCreating(function (\App\Models\User $user) {
-            $user->assignRole('student');
-        });
-    }
-
 
     /**
      * Define the model's default state.

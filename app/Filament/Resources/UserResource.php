@@ -37,7 +37,7 @@ class UserResource extends Resource
 
                 Forms\Components\TextInput::make('password')
                     ->password()
-                    ->dehydrateStateUsing(fn($state) => !empty($state) ? Hash::make($state) : null)
+                    ->nullable()
                     ->required(fn($context) => $context === 'create')
                     ->maxLength(255),
 

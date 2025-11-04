@@ -31,6 +31,14 @@ class UserSeeder extends Seeder
             'updated_at' => '2025-10-23 20:25:23',
         ])->assignRole('admin');
 
-        User::factory()->count(50)->create();
+        // Create 10 mentors
+        User::factory()->count(10)->create()->each(function ($user) {
+            $user->assignRole('mentor');
+        });
+
+        // Create 40 students
+        User::factory()->count(40)->create()->each(function ($user) {
+            $user->assignRole('student');
+        });
     }
 }

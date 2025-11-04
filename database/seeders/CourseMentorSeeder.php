@@ -14,6 +14,13 @@ class CourseMentorSeeder extends Seeder
      */
     public function run()
     {
-        CourseMentor::factory()->count(10)->create();
+        $mentors = \App\Models\User::role('mentor')->get();
+
+        foreach ($mentors as $mentor) {
+            \App\Models\CourseMentor::factory()->create([
+                'user_id' => $mentor->id,
+                'course_id' => \App\Models\Course::inRandomOrder()->first()->id,
+            ]);
+        }
     }
 }
