@@ -22,7 +22,7 @@ class CourseRepository implements CourseRepositoryInterface
         return Course::with([
             'category:id,name,slug',
             'mentors.user:id,name,photo', // Nested loading: Mentor dan detail User (Mentor)
-            'benefits:id,course_id,name',
+            'benefits:id,course_id,name,description',
             'sections.contents', // CourseSection dan SectionContents
             'pricings',
             'batches',

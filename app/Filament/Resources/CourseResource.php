@@ -45,7 +45,9 @@ class CourseResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('thumbnail')->square(),
+                Tables\Columns\ImageColumn::make('thumbnail')
+                    ->getStateUsing(fn(Course $record) => $record->thumbnail_url)
+                    ->square(),
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
                 // Tables\Columns\TextColumn::make('slug')->toggleable(),
                 Tables\Columns\TextColumn::make('category.name')->label('Category'),

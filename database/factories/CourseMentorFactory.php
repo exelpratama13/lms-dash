@@ -29,6 +29,7 @@ class CourseMentorFactory extends Factory
             'course_id' => Course::factory(),
             'job' => $this->faker->jobTitle,
             'about' => $this->faker->paragraph,
+            'foto' => $this->faker->imageUrl(),
         ];
     }
 }

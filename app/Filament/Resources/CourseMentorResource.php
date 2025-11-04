@@ -36,7 +36,7 @@ class CourseMentorResource extends Resource
                     ->label('Mentor')
                     ->options(
                         User::role(['mentor', 'admin'], 'web')
-                        ->pluck('name', 'id')
+                            ->pluck('name', 'id')
                     )
                     // ->searchable()
                     ->required(),
@@ -45,11 +45,6 @@ class CourseMentorResource extends Resource
                     ->options(Course::all()->pluck('name', 'id'))
                     ->searchable()
                     ->required(),
-
-                Select::make('category_id')
-                    ->relationship('category', 'name')
-                    ->required(),
-
                 TextInput::make('job')
                     ->label('Job')
                     ->required()
@@ -58,6 +53,7 @@ class CourseMentorResource extends Resource
                     ->label('About')
                     ->maxLength(65535)
                     ->columnSpan('full'),
+
             ]);
     }
 
@@ -73,12 +69,6 @@ class CourseMentorResource extends Resource
                     ->label('Course')
                     ->searchable()
                     ->sortable(),
-
-                TextColumn::make('category.name')->label('Category')
-                ->label('Category')
-                    ->searchable()
-                    ->sortable(),
-
                 // TextColumn::make('job')
                 //     ->label('Job')
                 //     ->searchable()

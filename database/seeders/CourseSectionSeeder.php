@@ -15,6 +15,6 @@ class CourseSectionSeeder extends Seeder
             return;
         }
 
-        CourseSection::factory()->count(15)->create();
+        CourseSection::factory()->count(3)->create();
     }
 }

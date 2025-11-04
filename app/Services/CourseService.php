@@ -28,7 +28,7 @@ class CourseService implements CourseServiceInterface
         $courses = $this->courseRepository->getPopularCourses();
 
         // Contoh Logika Bisnis Tambahan (Misal: membatasi jumlah hasil)
-        // return $courses->take(10); 
+        // return $courses->take(10);
 
         return $courses;
     }
@@ -74,8 +74,9 @@ class CourseService implements CourseServiceInterface
         // Asumsi: File di-upload ke disk 'public' di folder 'thumbnails'
         $path = $thumbnailFile->store('thumbnails', 'public');
 
-        // 3. Gabungkan path ke dalam data
-        $data['thumbnail'] = $path;
+        // 3. Simpan sebagai URL penuh agar frontend bisa langsung mengaksesnya.
+        // Storage::url($path) biasanya mengembalikan '/storage/...' — gunakan url() untuk menambahkan APP_URL
+        $data['thumbnail'] = url(\Illuminate\Support\Facades\Storage::url($path));
 
         // 4. Panggil Repository untuk menyimpan ke database
         return $this->courseRepository->createCourse($data);
@@ -96,14 +97,15 @@ class CourseService implements CourseServiceInterface
                 Storage::disk('public')->delete($course->thumbnail);
             }
             // Simpan thumbnail baru
-            $data['thumbnail'] = $data['thumbnail']->store('thumbnails', 'public');
+            $path = $data['thumbnail']->store('thumbnails', 'public');
+            $data['thumbnail'] = url(\Illuminate\Support\Facades\Storage::url($path));
         }
 
         // 2. Jika nama diubah, slug akan otomatis diperbarui oleh Mutator di Model Course
         if (isset($data['name'])) {
             $data['slug'] = Str::slug($data['name']);
         }
-        
+
         // 3. Simpan perubahan
         return $this->courseRepository->update($course, $data);
     }
@@ -115,7 +117,7 @@ class CourseService implements CourseServiceInterface
         if (!$course) {
             throw new \Exception("Course not found.");
         }
-        
+
         // Hapus thumbnail terkait (opsional, tapi disarankan)
         if ($course->thumbnail) {
             Storage::disk('public')->delete($course->thumbnail);
@@ -124,5 +126,4 @@ class CourseService implements CourseServiceInterface
         // Lakukan penghapusan
         return $this->courseRepository->delete($course);
     }
-    
 }

@@ -10,6 +10,16 @@ class EditCourse extends EditRecord
 {
     protected static string $resource = CourseResource::class;
 
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (isset($data['thumbnail'])) {
+            // Convert relative thumbnail path to full URL for storage
+            $data['thumbnail'] = url('storage/' . $data['thumbnail']);
+        }
+
+        return $data;
+    }
+
     protected function getHeaderActions(): array
     {
         return [

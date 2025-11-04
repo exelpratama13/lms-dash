@@ -14,6 +14,6 @@ class CourseBenefitSeeder extends Seeder
      */
     public function run()
     {
-        CourseBenefit::factory()->count(300)->create();
+        CourseBenefit::factory()->count(3)->create();
     }
 }

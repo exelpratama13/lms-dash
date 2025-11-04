@@ -10,8 +10,13 @@ use App\Http\Controllers\Api\PricingController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\StatsController;
 
-//login
+// Auth
 Route::post('/login', [AuthController::class, 'login']);
+Route::group(['middleware' => 'auth:api'], function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
+    Route::get('/me', [AuthController::class, 'me']);
+});
 
 //course populer, detail course, all-course, course by category, CRUD mentor
 Route::get('/courses/popular', [CourseController::class, 'getPopularCourses']);
@@ -20,7 +25,7 @@ Route::get('/courses', [CourseController::class, 'index']);
 Route::get('/courses/category/{categorySlug}', [CourseController::class, 'courseByCategory']);
 
 //CRUD Course
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:api')->group(function () {
 
     // CRUD Course (Wajib Autentikasi dan Otorisasi Role di Form Request)
     Route::post('/courses', [CourseController::class, 'store']);
@@ -48,13 +53,7 @@ Route::get('/contents/{contentId}', [CourseSectionController::class, 'showConten
 Route::get('courses/{courseId}/pricings', [PricingController::class, 'listPricings']);
 
 //transaction
-Route::post('transactions', [TransactionController::class, 'store'])->middleware('auth:sanctum');
-
-
-
-
-
-
+Route::post('transactions', [TransactionController::class, 'store'])->middleware('auth:api');
 
 
 //category, popular category (-1)

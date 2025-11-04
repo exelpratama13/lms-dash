@@ -15,6 +15,6 @@ class CourseContentSeeder extends Seeder
             return;
         }
 
-        CourseContent::factory()->count(30)->create();
+        CourseContent::factory()->count(3)->create();
     }
 }

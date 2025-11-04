@@ -26,6 +26,14 @@ class Course extends Model
         'is_popular' => 'boolean',
     ];
 
+    /**
+     * Append computed attributes when serializing the model.
+     * `thumbnail_url` will return full URL including '/storage/' prefix.
+     */
+    protected $appends = [
+        'thumbnail_url',
+    ];
+
     public function setNameAttribute($value)
     {
         $this->attributes['name'] = $value;
@@ -70,5 +78,31 @@ class Course extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Get full URL for thumbnail (includes storage prefix and app URL).
+     */
+    public function getThumbnailUrlAttribute(): ?string
+    {
+        $thumbnail = $this->attributes['thumbnail'] ?? null;
+
+        if (empty($thumbnail)) {
+            return null;
+        }
+
+        // If it's already a full URL, return as-is
+        if (preg_match('#^https?://#i', $thumbnail)) {
+            return $thumbnail;
+        }
+
+        // If it already contains the /storage/ prefix (absolute path), ensure APP_URL is prepended
+        if (str_starts_with($thumbnail, '/storage/')) {
+            return url(ltrim($thumbnail, '/'));
+        }
+
+        // Otherwise, assume it's a relative storage path like 'thumbnails/xxx.png'
+        $path = ltrim($thumbnail, '/');
+        return url('storage/' . $path);
     }
 }
