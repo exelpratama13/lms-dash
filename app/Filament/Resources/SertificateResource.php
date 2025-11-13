@@ -57,6 +57,10 @@ class SertificateResource extends Resource
                         })
                     )
                     ->required(),
+
+                Forms\Components\ViewField::make('certificate_preview')
+                    ->view('filament.sertificates.components.certificate-viewer')
+                    ->visible(fn ($record) => $record && $record->sertificate_url),
             ]);
     }
 
@@ -96,6 +100,12 @@ class SertificateResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('downloadCertificate')
+                    ->label('Download Certificate')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->url(fn (Sertificate $record): ?string => $record->sertificate_url ? url($record->sertificate_url) : null)
+                    ->openUrlInNewTab()
+                    ->hidden(fn (Sertificate $record): bool => !$record->sertificate_url),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

@@ -33,11 +33,26 @@ class CourseRepository implements CourseRepositoryInterface
             ->first();
     }
 
+    public function getCourseMateriBySlug(string $slug): ?Course
+    {
+        return Course::with([
+            'sections.contents.quiz.questions.options',
+            'sections.contents.quiz.quizAttempts.studentAnswers',
+            'sections.contents.attachment',
+            'sections.contents.video',
+        ])
+            ->where('slug', $slug)
+            ->first();
+    }
+
     public function getAllCoursesList(): Collection
     {
-        // Eager load relasi yang diperlukan untuk list: category, dan hitungan mentor
-        return Course::with('category:id,name')
-            ->withCount('mentors') // Hitung jumlah mentor per course
+        // Eager load relasi yang diperlukan untuk list: category, dan data mentor
+        return Course::with([
+                'category:id,name',
+                'mentors.user:id,name,photo' // Memuat data mentor (nama dan foto)
+            ])
+            ->withCount('mentors') // Tetap hitung jumlah mentor
             // Urutkan berdasarkan nama atau created_at terbaru
             ->orderBy('name')
             ->get([
@@ -102,5 +117,41 @@ class CourseRepository implements CourseRepositoryInterface
     public function getCourseCount(): int
     {
         return Course::count();
+    }
+
+    public function getMyCourses(int $userId): Collection
+    {
+        // Temukan CourseStudent berdasarkan userId
+        $enrolledCourses = \App\Models\CourseStudent::where('user_id', $userId)
+            ->with([
+                'course.category:id,name,slug', // Eager load course dan category-nya
+                'course.mentors.user:id,name,photo' // Eager load mentor dari course
+            ])
+            ->get()
+            ->map(function ($enrollment) use ($userId) {
+                $course = $enrollment->course;
+                if ($course) {
+                    // Hitung total konten dalam course
+                    $totalContents = $course->contents()->count();
+
+                    // Hitung konten yang sudah diselesaikan oleh user untuk course ini
+                    $completedContents = \App\Models\CourseProgress::where('user_id', $userId)
+                        ->where('course_id', $course->id)
+                        ->where('is_completed', true)
+                        ->count();
+
+                    // Hitung persentase
+                    $percentage = ($totalContents > 0)
+                        ? ($completedContents / $totalContents) * 100
+                        : 0;
+
+                    // Tambahkan atribut progress_percentage ke model course
+                    $course->setAttribute('progress_percentage', round($percentage));
+                }
+                return $course;
+            })
+            ->filter(); // Hapus item null jika ada course yang tidak ditemukan
+
+        return new Collection($enrolledCourses);
     }
 }

@@ -31,16 +31,21 @@ class CourseStudentResource extends Resource
         return $form
             ->schema([
                 Select::make('user_id')
-                    ->label('Student')
-                    ->options(
-                        User::role('student')
-                            ->pluck('name', 'id')
-                    )
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload()
                     ->required(),
                 Select::make('course_id')
-                    ->label('Course')
-                    ->options(Course::all()->pluck('name', 'id'))
+                    ->relationship('course', 'name')
+                    ->searchable()
+                    ->preload()
                     ->required(),
+                Select::make('course_batch_id')
+                    ->label('Batch')
+                    ->relationship('batch', 'name')
+                    ->searchable()
+                    ->preload(),
+                Forms\Components\DateTimePicker::make('access_expires_at'),
             ]);
     }
 
@@ -55,6 +60,13 @@ class CourseStudentResource extends Resource
                 TextColumn::make('course.name')
                     ->label('Course')
                     ->searchable()
+                    ->sortable(),
+                TextColumn::make('batch.name')
+                    ->label('Batch')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('access_expires_at')
+                    ->dateTime()
                     ->sortable(),
             ])
             ->filters([

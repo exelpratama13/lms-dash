@@ -13,7 +13,6 @@ class CourseProgress extends Model
 
     protected $fillable = [
         'user_id',
-        'progress_percentage',
         'course_id',
         'course_batch_id',
         'course_section_id',

@@ -2,20 +2,40 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CourseSectionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\CourseProgressController;
 use App\Http\Controllers\Api\MentorController;
 use App\Http\Controllers\Api\PricingController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\StatsController;
+// use App\Http\Controllers\Api\QuizAttemptController; // Removed import
 
 // Auth
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/me', [AuthController::class, 'updateProfile']);
+
+    // My Courses
+    Route::get('/my-courses', [CourseController::class, 'myCourses']);
+
+    // Mark content as complete
+    Route::post('/courses/{courseId}/contents/{contentId}/complete', [CourseProgressController::class, 'markAsComplete']);
+
+    // My Transactions
+    Route::get('/my-transactions', [TransactionController::class, 'myTransactions']);
+
+    // My Certificates
+    Route::get('/my-certificates', [CertificateController::class, 'myCertificates']);
+
+    // Show single transaction
+    Route::get('/transactions/{bookingTrxId}', [TransactionController::class, 'show']);
 });
 
 //course populer, detail course, all-course, course by category, CRUD mentor
@@ -23,6 +43,7 @@ Route::get('/courses/popular', [CourseController::class, 'getPopularCourses']);
 Route::get('/courses/{slug}', [CourseController::class, 'show']);
 Route::get('/courses', [CourseController::class, 'index']);
 Route::get('/courses/category/{categorySlug}', [CourseController::class, 'courseByCategory']);
+Route::get('/materi/{slug}', [CourseController::class, 'materi']);
 
 //CRUD Course
 Route::middleware('auth:api')->group(function () {
@@ -69,3 +90,8 @@ Route::get('/mentors/category/{categorySlug}', [MentorController::class, 'mentor
 
 //stats
 Route::get('/counts', [StatsController::class, 'getCounts']);
+
+//midtrans
+
+//quizz
+// Removed quiz-attempts routes

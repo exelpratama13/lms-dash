@@ -18,6 +18,8 @@ class CourseStudent extends Model
     protected $fillable = [
         'user_id',
         'course_id',
+        'course_batch_id', // Tambahkan ini
+        'access_expires_at',
     ];
 
     /**
@@ -34,5 +36,14 @@ class CourseStudent extends Model
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    /**
+     * Get the batch that the student belongs to.
+     */
+    public function batch(): BelongsTo
+    {
+        // Secara eksplisit memberitahu Laravel nama foreign key yang benar
+        return $this->belongsTo(CourseBatch::class, 'course_batch_id');
     }
 }

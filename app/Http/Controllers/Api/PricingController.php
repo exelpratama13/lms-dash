@@ -21,24 +21,26 @@ class PricingController extends Controller
     public function listPricings(int $courseId): JsonResponse
     {
         try {
-            $pricings = $this->service->listPricings($courseId);
+            // Variabel diubah menjadi $course untuk merefleksikan data yang diterima
+            $course = $this->service->listPricings($courseId);
 
-            if ($pricings->isEmpty()) {
+            // Jika course tidak ditemukan, kembalikan 404
+            if (!$course) {
                  return response()->json([
-                    'status' => 'success',
-                    'message' => 'No pricings found for this course.',
-                    'data' => [],
-                ], 200);
+                    'status' => 'error',
+                    'message' => 'Course not found.',
+                ], 404);
             }
 
+            // Kembalikan data course yang sudah berisi pricings dan batches
             return response()->json([
                 'status' => 'success',
-                'data' => $pricings,
+                'data' => $course,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to retrieve pricings: ' . $e->getMessage(),
+                'message' => 'Failed to retrieve course data: ' . $e->getMessage(),
             ], 500);
         }
     }

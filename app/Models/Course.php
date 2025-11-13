@@ -32,7 +32,19 @@ class Course extends Model
      */
     protected $appends = [
         'thumbnail_url',
+        'creation_year',
     ];
+
+    /**
+     * Get the year the course was created.
+     */
+    public function getCreationYearAttribute(): ?int
+    {
+        if (isset($this->attributes['created_at'])) {
+            return date('Y', strtotime($this->attributes['created_at']));
+        }
+        return null;
+    }
 
     public function setNameAttribute($value)
     {
@@ -63,6 +75,11 @@ class Course extends Model
     public function sections(): HasMany
     {
         return $this->hasMany(CourseSection::class);
+    }
+
+    public function contents(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(CourseContent::class, CourseSection::class);
     }
 
     public function pricings(): BelongsToMany

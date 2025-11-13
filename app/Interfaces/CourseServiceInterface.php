@@ -12,8 +12,11 @@ interface CourseServiceInterface
     public function getPopularCoursesData(): Collection;
 
     public function getCourseDetail(string $slug): ?Course;
+    public function getCourseMateri(string $slug): ?Course;
 
     public function getCoursesByCategorySlug(string $categorySlug): Collection;
+
+    public function getMyCourses(): Collection;
 
     public function createNewCourse(array $data): Course;
 

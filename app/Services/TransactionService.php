@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Interfaces\TransactionRepositoryInterface;
 use App\Interfaces\TransactionServiceInterface;
+use App\Models\Pricing;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str; // Pastikan ini ada (sudah Anda tambahkan dari error sebelumnya)
@@ -36,11 +37,24 @@ class TransactionService implements TransactionServiceInterface
             // 3. Buat Transaksi
             $transaction = $this->repository->createTransaction($transactionData);
 
-            // 4. Tambahkan User ke CourseStudents (Tabel CourseStudents)
+            // --- LOGIKA BARU UNTUK LANGGANAN ---
+            // 4. Ambil durasi dari pricing. Asumsi 'pricing_id' ada di $data.
+            $pricing = Pricing::find($data['pricing_id']);
+            
+            $expiresAt = null;
+            // Cek jika pricing ditemukan dan memiliki durasi
+            if ($pricing && $pricing->duration) {
+                $expiresAt = now()->addDays($pricing->duration);
+            }
+
+            // 5. Tambahkan User ke CourseStudents dengan data lengkap
             $this->repository->createCourseStudent([
                 'user_id' => $data['user_id'],
                 'course_id' => $data['course_id'],
+                'course_batch_id' => $data['course_batch_id'], // Menyimpan ID batch
+                'access_expires_at' => $expiresAt, // Menyimpan tanggal kedaluwarsa
             ]);
+            // --- AKHIR LOGIKA BARU ---
 
             return $transaction;
         });
@@ -68,5 +82,15 @@ class TransactionService implements TransactionServiceInterface
         $newCode = $prefix . str_pad($newNumber, $paddingLength, '0', STR_PAD_LEFT);
 
         return $newCode;
+    }
+
+    public function getMyTransactions(int $userId): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->repository->getTransactionsByUserId($userId);
+    }
+
+    public function findTransactionById(string $bookingTrxId, int $userId): ?Transaction
+    {
+        return $this->repository->find($bookingTrxId, $userId);
     }
 }

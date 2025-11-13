@@ -179,4 +179,48 @@ class CourseController extends Controller
             ], 404); // 404 Not Found
         }
     }
+
+    public function materi(string $slug): JsonResponse
+    {
+        try {
+            $course = $this->courseService->getCourseMateri($slug);
+
+            if (!$course) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Course not found',
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Course materi retrieved successfully',
+                'data' => $course,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve course materi: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function myCourses(): JsonResponse
+    {
+        try {
+            $courses = $this->courseService->getMyCourses();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'My courses retrieved successfully',
+                'count' => $courses->count(),
+                'data' => $courses,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve my courses: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

@@ -2,21 +2,24 @@
 
 namespace App\Services;
 
-use App\Interfaces\PricingRepositoryInterface;
 use App\Interfaces\PricingServiceInterface;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\Course;
 
 class PricingService implements PricingServiceInterface
 {
-    protected $repository;
+    // Kita tidak lagi memerlukan repository di sini untuk logika ini
+    // public function __construct(PricingRepositoryInterface $repository)
+    // {
+    //     $this->repository = $repository;
+    // }
 
-    public function __construct(PricingRepositoryInterface $repository)
+    public function listPricings(int $courseId): ?Course
     {
-        $this->repository = $repository;
-    }
-
-    public function listPricings(int $courseId): Collection
-    {
-        return $this->repository->getPricingsByCourseId($courseId);
+        // Mengambil data Course dan memuat relasi pricings dan batches
+        // sekaligus menghitung jumlah siswa per batch
+        return Course::with([
+            'pricings',
+            'batches' => fn($query) => $query->withCount('students')
+        ])->find($courseId);
     }
 }

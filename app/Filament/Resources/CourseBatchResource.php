@@ -33,6 +33,10 @@ class CourseBatchResource extends Resource
                     ->label('Nama Batch')
                     ->required()
                     ->maxLength(255),
+                TextInput::make('quota')
+                    ->label('quota')
+                    ->required()
+                    ->maxLength(3),
                 Select::make('mentor_id')
                     ->label('Mentor')
                     ->options(

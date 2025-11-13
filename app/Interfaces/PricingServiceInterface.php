@@ -2,9 +2,9 @@
 
 namespace App\Interfaces;
 
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\Course;
 
 interface PricingServiceInterface
 {
-    public function listPricings(int $courseId): Collection;
+    public function listPricings(int $courseId): ?Course;
 }

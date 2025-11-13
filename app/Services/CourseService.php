@@ -47,6 +47,11 @@ class CourseService implements CourseServiceInterface
         return $course;
     }
 
+    public function getCourseMateri(string $slug): ?Course
+    {
+        return $this->courseRepository->getCourseMateriBySlug($slug);
+    }
+
     public function getCourseCatalog(): Collection
     {
         // Logika Bisnis: Di sini Anda bisa menambahkan filtering berdasarkan query string
@@ -125,5 +130,19 @@ class CourseService implements CourseServiceInterface
 
         // Lakukan penghapusan
         return $this->courseRepository->delete($course);
+    }
+
+    public function getMyCourses(): Collection
+    {
+        // Dapatkan ID pengguna yang terotentikasi
+        $userId = auth('api')->id();
+
+        if (!$userId) {
+            // Kembalikan koleksi kosong jika tidak ada pengguna yang terotentikasi
+            return new Collection();
+        }
+
+        // Panggil repository untuk mendapatkan data
+        return $this->courseRepository->getMyCourses($userId);
     }
 }

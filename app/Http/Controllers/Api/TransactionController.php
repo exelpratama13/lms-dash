@@ -43,4 +43,70 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Mengambil daftar transaksi untuk user yang sedang login.
+     */
+    public function myTransactions(): JsonResponse
+    {
+        try {
+            $userId = auth()->id();
+            if (!$userId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated.',
+                ], 401);
+            }
+
+            $transactions = $this->service->getMyTransactions($userId);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'My transactions retrieved successfully.',
+                'count' => $transactions->count(),
+                'data' => $transactions,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve my transactions: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Mengambil detail transaksi berdasarkan booking_trx_id.
+     */
+    public function show(string $bookingTrxId): JsonResponse
+    {
+        try {
+            $userId = auth()->id();
+            if (!$userId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not authenticated.',
+                ], 401);
+            }
+
+            $transaction = $this->service->findTransactionById($bookingTrxId, $userId);
+
+            if (!$transaction) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Transaction not found or you do not have access to it.',
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Transaction details retrieved successfully.',
+                'data' => $transaction,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve transaction details: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

@@ -26,9 +26,33 @@ class QuizResource extends Resource
                     ->required()
                     ->maxLength(255),
 
+                Forms\Components\Select::make('course_id')
+                    ->label('Course')
+                    ->options(\App\Models\Course::all()->pluck('name', 'id')->toArray())
+                    ->reactive()
+                    ->afterStateUpdated(fn (callable $set) => $set('course_section_id', null)),
+
+                Forms\Components\Select::make('course_section_id')
+                    ->label('Section')
+                    ->options(function (callable $get) {
+                        $course = \App\Models\Course::find($get('course_id'));
+                        if (!$course) {
+                            return [];
+                        }
+                        return $course->sections->pluck('name', 'id')->toArray();
+                    })
+                    ->reactive()
+                    ->afterStateUpdated(fn (callable $set) => $set('course_content_id', null)),
+
                 Forms\Components\Select::make('course_content_id')
                     ->label('Course Content')
-                    ->relationship('courseContent', 'name')
+                    ->options(function (callable $get) {
+                        $section = \App\Models\CourseSection::find($get('course_section_id'));
+                        if (!$section) {
+                            return [];
+                        }
+                        return $section->contents->pluck('name', 'id')->toArray();
+                    })
                     ->required(),
             ]);
     }

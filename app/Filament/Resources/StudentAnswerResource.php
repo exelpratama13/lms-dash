@@ -23,16 +23,48 @@ class StudentAnswerResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('user_id')
+                    ->label('Student Name')
+                    ->relationship('quizAttempt.user', 'name')
+                    ->reactive()
+                    ->afterStateUpdated(fn (callable $set) => $set('quiz_attempt_id', null))
+                    ->required(),
+
                 Forms\Components\Select::make('quiz_attempt_id')
-                    ->relationship('quizAttempt', 'id')
+                    ->label('Quiz Attempt')
+                    ->options(function (callable $get) {
+                        $user = \App\Models\User::find($get('user_id'));
+                        if (!$user) {
+                            return [];
+                        }
+                        return $user->quizAttempts->pluck('id', 'id')->toArray();
+                    })
+                    ->reactive()
+                    ->afterStateUpdated(fn (callable $set) => $set('question_id', null))
                     ->required(),
 
                 Forms\Components\Select::make('question_id')
-                    ->relationship('question', 'question_text')
+                    ->label('Question')
+                    ->options(function (callable $get) {
+                        $quizAttempt = \App\Models\QuizAttempt::find($get('quiz_attempt_id'));
+                        if (!$quizAttempt) {
+                            return [];
+                        }
+                        return $quizAttempt->quiz->questions->pluck('question_text', 'id')->toArray();
+                    })
+                    ->reactive()
+                    ->afterStateUpdated(fn (callable $set) => $set('question_option_id', null))
                     ->required(),
 
                 Forms\Components\Select::make('question_option_id')
-                    ->relationship('chosenOption', 'option_text')
+                    ->label('Chosen Option')
+                    ->options(function (callable $get) {
+                        $question = \App\Models\Question::find($get('question_id'));
+                        if (!$question) {
+                            return [];
+                        }
+                        return $question->options->pluck('option_text', 'id')->toArray();
+                    })
                     ->required(),
             ]);
     }
@@ -41,6 +73,11 @@ class StudentAnswerResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('quizAttempt.user.name')
+                    ->label('Student Name')
+                    ->searchable()
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('quizAttempt.id')
                     ->label('Quiz Attempt'),
 
@@ -48,11 +85,15 @@ class StudentAnswerResource extends Resource
                     ->label('Question')
                     ->limit(50),
 
-                Tables\Columns\TextColumn::make('questionOption.option_text')
+                Tables\Columns\TextColumn::make('chosenOption.option_text')
                     ->label('Answer Option')
                     ->limit(50),
             ])
-            ->filters([])
+            ->filters([
+                Tables\Filters\SelectFilter::make('user')
+                    ->relationship('quizAttempt.user', 'name')
+                    ->label('Student Name'),
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])

@@ -12,8 +12,11 @@ interface CourseRepositoryInterface
     public function getPopularCourses(): Collection;
 
     public function getCourseDetailsBySlug(string $slug): ?Course;
+    public function getCourseMateriBySlug(string $slug): ?Course;
 
     public function getCoursesByCategorySlug(string $categorySlug): Collection;
+
+    public function getMyCourses(int $userId): Collection;
 
     public function createCourse(array $data): Course;
 

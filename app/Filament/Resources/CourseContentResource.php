@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CourseContentResource\Pages;
+use App\Filament\Resources\CourseContentResource\RelationManagers;
 use App\Models\CourseContent;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -21,15 +22,28 @@ class CourseContentResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('course_id')
+                    ->label('Course')
+                    ->options(\App\Models\Course::all()->pluck('name', 'id'))
+                    ->live()
+                    ->afterStateUpdated(fn (callable $set) => $set('course_section_id', null))
+                    ->required(),
+
+                Forms\Components\Select::make('course_section_id')
+                    ->label('Course Section')
+                    ->options(function (callable $get) {
+                        $courseId = $get('course_id');
+                        if ($courseId) {
+                            return \App\Models\CourseSection::where('course_id', $courseId)->pluck('name', 'id');
+                        }
+                        return [];
+                    })
+                    ->required(),
+
                 Forms\Components\TextInput::make('name')
                     ->label('Content Title')
                     ->required()
                     ->maxLength(255),
-
-                Forms\Components\Select::make('course_section_id')
-                    ->label('Course Section')
-                    ->relationship('CourseSection', 'name')
-                    ->required(),
 
                 Forms\Components\RichEditor::make('content')
                     ->label('Content Body')
@@ -74,8 +88,8 @@ class CourseContentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // nanti bisa ditambahkan RelationManager:
-            // CourseAttachmentsRelationManager, VideosRelationManager, QuizzesRelationManager
+            RelationManagers\VideoRelationManager::class,
+            RelationManagers\AttachmentRelationManager::class,
         ];
     }
 

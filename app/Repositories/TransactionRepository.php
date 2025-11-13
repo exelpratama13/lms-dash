@@ -27,6 +27,20 @@ class TransactionRepository implements TransactionRepositoryInterface
 
         return $lastTransaction ? $lastTransaction->booking_trx_id : null;
     }
-    
-    
+
+    public function getTransactionsByUserId(int $userId): \Illuminate\Database\Eloquent\Collection
+    {
+        return Transaction::where('user_id', $userId)
+            ->with(['course', 'pricing']) // Eager load relasi course dan pricing jika diperlukan
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function find(string $bookingTrxId, int $userId): ?Transaction
+    {
+        return Transaction::where('booking_trx_id', $bookingTrxId)
+            ->where('user_id', $userId)
+            ->with(['course', 'pricing'])
+            ->first();
+    }
 }

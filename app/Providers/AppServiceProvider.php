@@ -9,6 +9,12 @@ use App\Interfaces\StatsRepositoryInterface;
 use App\Repositories\StatsRepository;
 use App\Interfaces\StatsServiceInterface;
 use App\Services\StatsService;
+use App\Interfaces\CertificateServiceInterface;
+use App\Services\CertificateService;
+use App\Interfaces\CertificateRepositoryInterface;
+use App\Repositories\CertificateRepository;
+use App\Models\Sertificate; // Added
+use App\Observers\SertificateObserver; // Added
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(StatsRepositoryInterface::class, StatsRepository::class);
         $this->app->bind(StatsServiceInterface::class, StatsService::class);
+        $this->app->bind(CertificateServiceInterface::class, CertificateService::class);
+        $this->app->bind(CertificateRepositoryInterface::class, CertificateRepository::class);
     }
     public function boot(): void
     {
@@ -33,5 +41,7 @@ class AppServiceProvider extends ServiceProvider
         Route::middleware('api')
             ->prefix('api') // Menambahkan awalan '/api' secara otomatis
             ->group(base_path('routes/api.php'));
+
+        Sertificate::observe(SertificateObserver::class); // Added
     }
 }

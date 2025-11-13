@@ -28,30 +28,66 @@ class CourseProgressResource extends Resource
                         User::role('student')
                             ->pluck('name', 'id')
                     )
+                    ->live()
+                    ->afterStateUpdated(function (callable $set) {
+                        $set('course_id', null);
+                        $set('course_batch_id', null);
+                        $set('course_section_id', null);
+                        $set('course_content_id', null);
+                    })
                     ->required(),
 
                 Forms\Components\Select::make('course_id')
                     ->relationship('course', 'name')
+                    ->options(function (callable $get) {
+                        $user = User::find($get('user_id'));
+                        if (!$user) {
+                            return [];
+                        }
+                        return $user->courses->pluck('name', 'id');
+                    })
+                    ->live()
+                    ->afterStateUpdated(function (callable $set, callable $get, $state) {
+                        $courseStudent = \App\Models\CourseStudent::where('user_id', $get('user_id'))
+                            ->where('course_id', $state)
+                            ->first();
+                        if ($courseStudent) {
+                            $set('course_batch_id', $courseStudent->course_batch_id);
+                        }
+                        $set('course_section_id', null);
+                        $set('course_content_id', null);
+                    })
                     ->required(),
 
                 Forms\Components\Select::make('course_batch_id')
                     ->relationship('courseBatch', 'name')
+                    ->disabled()
+                    ->dehydrated()
                     ->required(),
 
                 Forms\Components\Select::make('course_section_id')
-                    ->relationship('courseSection', 'name')
+                    ->label('Course Section')
+                    ->options(function (callable $get) {
+                        $course = \App\Models\Course::find($get('course_id'));
+                        if (!$course) {
+                            return [];
+                        }
+                        return $course->sections->pluck('name', 'id');
+                    })
+                    ->live()
+                    ->afterStateUpdated(fn (callable $set) => $set('course_content_id', null))
                     ->required(),
 
                 Forms\Components\Select::make('course_content_id')
-                    ->relationship('courseContent', 'name')
+                    ->label('Course Content')
+                    ->options(function (callable $get) {
+                        $section = \App\Models\CourseSection::find($get('course_section_id'));
+                        if (!$section) {
+                            return [];
+                        }
+                        return $section->contents->pluck('name', 'id');
+                    })
                     ->required(),
-
-                Forms\Components\TextInput::make('progress_percentage')
-                    ->numeric()
-                    ->minValue(0)
-                    ->maxValue(100)
-                    ->required(),
-
 
                 Forms\Components\Toggle::make('is_completed')
                     ->label('Completed')
@@ -83,10 +119,6 @@ class CourseProgressResource extends Resource
 
                 Tables\Columns\TextColumn::make('courseContent.name')
                     ->label('Content'),
-
-                Tables\Columns\TextColumn::make('progress_percentage')
-                    ->label('Progress (%)')
-                    ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_completed')
                     ->boolean()

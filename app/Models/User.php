@@ -86,6 +86,11 @@ class User extends Authenticatable implements FilamentUser, JWTSubject
         return $this->hasMany(Sertificate::class);
     }
 
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'course_students');
+    }
+
     public function courseMentors(): HasMany
     {
         return $this->hasMany(CourseMentor::class, 'user_id');
