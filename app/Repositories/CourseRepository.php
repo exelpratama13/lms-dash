@@ -35,7 +35,7 @@ class CourseRepository implements CourseRepositoryInterface
 
     public function getCourseMateriBySlug(string $slug): ?Course
     {
-        return Course::with([
+        $course = Course::with([
             'sections.contents.quiz.questions.options',
             'sections.contents.quiz.quizAttempts.studentAnswers',
             'sections.contents.attachment',
@@ -43,6 +43,27 @@ class CourseRepository implements CourseRepositoryInterface
         ])
             ->where('slug', $slug)
             ->first();
+
+        if (!$course) {
+            return null;
+        }
+
+        // If a user is authenticated, attach their completion status to each content
+        if (auth('api')->check()) {
+            $userId = auth('api')->id();
+            $progress = \App\Models\CourseProgress::where('user_id', $userId)
+                ->where('course_id', $course->id)
+                ->get()
+                ->keyBy('course_content_id'); // More robust lookup
+
+            foreach ($course->sections as $section) {
+                foreach ($section->contents as $content) {
+                    $content->is_completed = $progress->has($content->id);
+                }
+            }
+        }
+
+        return $course;
     }
 
     public function getAllCoursesList(): Collection

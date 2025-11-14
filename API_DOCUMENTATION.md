@@ -15,6 +15,7 @@ Dokumentasi lengkap untuk semua endpoint API yang tersedia di proyek LMS.
 7.  [Transaksi](#transaksi)
 8.  [Statistik](#statistik)
 9.  [Sertifikat](#sertifikat)
+10. [Percobaan Kuis (Quiz Attempts)](#percobaan-kuis-quiz-attempts)
 
 ---
 
@@ -659,6 +660,33 @@ Endpoint untuk melihat dan mengelola struktur internal sebuah kelas.
   }
   ```
 
+### **Mark Content as Incomplete**
+
+- **Endpoint:** `DELETE /api/courses/{courseId}/contents/{contentId}/complete`
+- **Deskripsi:** Menghapus status selesai dari sebuah konten untuk pengguna yang sedang login.
+- **Autentikasi:** **Wajib** (Bearer Token).
+- **Parameter URL:**
+  - `courseId` (integer, wajib): ID dari course.
+  - `contentId` (integer, wajib): ID dari content yang akan ditandai belum selesai.
+- **Respons Sukses (200):**
+  ```json
+  {
+    "message": "Content marked as incomplete"
+  }
+  ```
+- **Respons Error (403):** Jika user tidak terdaftar di course.
+  ```json
+  {
+    "message": "You are not enrolled in this course"
+  }
+  ```
+- **Respons Error (404):** Jika course atau content tidak ditemukan.
+  ```json
+  {
+    "message": "Course or content not found"
+  }
+  ```
+
 ### **Create Section**
 
 - **Endpoint:** `POST /api/sections`
@@ -1104,88 +1132,62 @@ Endpoint untuk melihat dan mengelola struktur internal sebuah kelas.
     ]
   }
   ```
+
 ---
 
 ## 10. Percobaan Kuis (Quiz Attempts)
 
-### **Create Quiz Attempt**
+### **Get All Quiz Attempts**
 
--   **Endpoint:** `POST /api/quiz-attempts`
--   **Deskripsi:** Menyimpan data percobaan kuis yang dilakukan oleh pengguna.
+-   **Endpoint:** `GET /api/quiz-attempts`
+-   **Deskripsi:** Mengambil semua percobaan kuis yang dilakukan oleh pengguna yang sedang login, beserta jawaban siswa.
 -   **Autentikasi:** **Wajib** (Bearer Token).
--   **Request Body:**
-    ```json
-    {
-      "user_id": 1,
-      "quiz_id": 1,
-      "start_time": "2025-11-13 10:00:00",
-      "end_time": "2025-11-13 10:30:00",
-      "score": 85,
-      "passed": true
-    }
-    ```
--   **Respons Sukses (201):**
-    ```json
-    {
-      "message": "Quiz attempt created successfully.",
-      "data": {
-        "user_id": 1,
-        "quiz_id": 1,
-        "start_time": "2025-11-13T10:00:00.000000Z",
-        "end_time": "2025-11-13T10:30:00.000000Z",
-        "score": 85,
-        "passed": true,
-        "updated_at": "2025-11-13T10:35:00.000000Z",
-        "created_at": "2025-11-13T10:35:00.000000Z",
-        "id": 1
-      }
-    }
-    ```
--   **Respons Error (422):** Jika data validasi gagal.
-    ```json
-    {
-      "message": "The given data was invalid.",
-      "errors": {
-        "user_id": [
-          "The selected user id is invalid."
-        ],
-        "end_time": [
-          "The end time must be a date after start time."
-        ]
-      }
-    }
-    ```
--   **Respons Error (500):** Jika terjadi kesalahan server.
-    ```json
-    {
-      "message": "Failed to create quiz attempt.",
-      "error": "..."
-    }
-    ```
-
-### **Get Quiz Attempts by User, Section, and Content**
-
--   **Endpoint:** `GET /api/my-quiz-attempts/section/{sectionId}/content/{contentId}`
--   **Deskripsi:** Mengambil data percobaan kuis yang dilakukan oleh pengguna yang sedang login, difilter berdasarkan ID section dan ID content.
--   **Autentikasi:** **Wajib** (Bearer Token).
--   **Parameter URL:**
-    -   `sectionId` (integer, wajib): ID dari section.
-    -   `contentId` (integer, wajib): ID dari content.
 -   **Respons Sukses (200):**
     ```json
     {
-      "message": "Quiz attempts retrieved successfully.",
+      "status": "success",
+      "message": "Quiz attempts retrieved successfully",
       "data": [
         {
           "id": 1,
           "user_id": 1,
           "quiz_id": 1,
-          "start_time": "2025-11-13T10:00:00.000000Z",
-          "end_time": "2025-11-13T10:30:00.000000Z",
-          "score": 85,
+          "start_time": "2025-11-14T10:00:00.000000Z",
+          "end_time": "2025-11-14T10:30:00.000000Z",
+          "score": 95,
           "passed": true,
-          "created_at": "2025-11-13T10:35:00.000000Z",
-          "updated_at": "2025-11-13T10:35:00.000000Z"
+          "created_at": "2025-11-14T10:35:00.000000Z",
+          "updated_at": "2025-11-14T10:35:00.000000Z",
+          "student_answers": [
+            {
+              "id": 1,
+              "quiz_attempt_id": 1,
+              "question_id": 1,
+              "question_option_id": 2,
+              "created_at": "2025-11-14T10:35:00.000000Z",
+              "updated_at": "2025-11-14T10:35:00.000000Z",
+              "question_option": {
+                "id": 2,
+                "question_id": 1,
+                "option_text": "Jawaban Benar",
+                "is_correct": true
+              }
+            },
+            {
+              "id": 2,
+              "quiz_attempt_id": 1,
+              "question_id": 2,
+              "question_option_id": 5,
+              "created_at": "2025-11-14T10:35:00.000000Z",
+              "updated_at": "2025-11-14T10:35:00.000000Z",
+              "question_option": {
+                "id": 5,
+                "question_id": 2,
+                "option_text": "Jawaban Salah",
+                "is_correct": false
+              }
+            }
+          ]
         }
       ]
     }
@@ -1199,7 +1201,74 @@ Endpoint untuk melihat dan mengelola struktur internal sebuah kelas.
 -   **Respons Error (500):** Jika terjadi kesalahan server.
     ```json
     {
-      "message": "Failed to retrieve quiz attempts.",
-      "error": "..."
+      "status": "error",
+      "message": "Failed to retrieve quiz attempts: ...",
     }
     ```
+
+### **Create Quiz Attempt**
+
+-   **Endpoint:** `POST /api/quiz-attempts`
+-   **Deskripsi:** Menyimpan data percobaan kuis yang telah diselesaikan oleh pengguna, termasuk semua jawabannya.
+-   **Autentikasi:** **Wajib** (Bearer Token).
+-   **Request Body:**
+    ```json
+    {
+      "quiz_id": 1,
+      "score": 95,
+      "start_time": "2025-11-14 10:00:00",
+      "end_time": "2025-11-14 10:30:00",
+      "passed": true,
+      "answers": [
+        {
+          "question_id": 1,
+          "question_option_id": 2
+        },
+        {
+          "question_id": 2,
+          "question_option_id": 5
+        }
+      ]
+    }
+    ```
+-   **Respons Sukses (201):**
+    ```json
+    {
+      "status": "success",
+      "message": "Quiz attempt stored successfully",
+      "data": {
+        "user_id": 1,
+        "quiz_id": 1,
+        "score": 95,
+        "start_time": "2025-11-14T10:00:00.000000Z",
+        "end_time": "2025-11-14T10:30:00.000000Z",
+        "passed": true,
+        "updated_at": "2025-11-14T10:35:00.000000Z",
+        "created_at": "2025-11-14T10:35:00.000000Z",
+        "id": 1
+      }
+    }
+    ```
+-   **Respons Error (422):** Jika data validasi gagal.
+    ```json
+    {
+      "message": "The given data was invalid.",
+      "errors": {
+        "quiz_id": [
+          "The selected quiz id is invalid."
+        ],
+        "answers.0.question_id": [
+            "The selected answers.0.question_id is invalid."
+        ]
+      }
+    }
+    ```
+-   **Respons Error (500):** Jika terjadi kesalahan server.
+    ```json
+    {
+      "status": "error",
+      "message": "Failed to store quiz attempt: ...",
+    }
+    ```
+
+

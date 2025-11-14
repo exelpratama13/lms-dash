@@ -11,7 +11,7 @@ use App\Http\Controllers\Api\MentorController;
 use App\Http\Controllers\Api\PricingController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\StatsController;
-// use App\Http\Controllers\Api\QuizAttemptController; // Removed import
+use App\Http\Controllers\Api\QuizAttemptController;
 
 // Auth
 Route::post('/register', [AuthController::class, 'register']);
@@ -27,6 +27,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Mark content as complete
     Route::post('/courses/{courseId}/contents/{contentId}/complete', [CourseProgressController::class, 'markAsComplete']);
+    Route::delete('/courses/{courseId}/contents/{contentId}/complete', [CourseProgressController::class, 'markAsIncomplete']);
 
     // My Transactions
     Route::get('/my-transactions', [TransactionController::class, 'myTransactions']);
@@ -94,4 +95,7 @@ Route::get('/counts', [StatsController::class, 'getCounts']);
 //midtrans
 
 //quizz
-// Removed quiz-attempts routes
+Route::middleware('auth:api')->group(function () {
+    Route::get('/quiz-attempts', [QuizAttemptController::class, 'index']);
+    Route::post('/quiz-attempts', [QuizAttemptController::class, 'store']);
+});

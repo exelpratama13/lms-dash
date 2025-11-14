@@ -91,6 +91,26 @@ class RepositoryServiceProvider extends ServiceProvider
             TransactionRepositoryInterface::class,
             TransactionRepository::class
         );
+
+        //Bind Quiz Attempt
+        $this->app->bind(
+            \App\Interfaces\QuizAttemptServiceInterface::class,
+            \App\Services\QuizAttemptService::class
+        );
+        $this->app->bind(
+            \App\Interfaces\QuizAttemptRepositoryInterface::class,
+            \App\Repositories\QuizAttemptRepository::class
+        );
+
+        //Bind Course Progress
+        $this->app->bind(
+            \App\Interfaces\CourseProgressServiceInterface::class,
+            \App\Services\CourseProgressService::class
+        );
+        $this->app->bind(
+            \App\Interfaces\CourseProgressRepositoryInterface::class,
+            \App\Repositories\CourseProgressRepository::class
+        );
     }
 
     public function boot(): void
