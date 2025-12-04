@@ -18,6 +18,11 @@ class CourseContentResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     // protected static ?string $navigationGroup = 'Courses';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -45,6 +50,11 @@ class CourseContentResource extends Resource
                     ->required()
                     ->maxLength(255),
 
+                Forms\Components\TextInput::make('position')
+                    ->label('Position')
+                    ->required()
+                    ->numeric(),
+
                 Forms\Components\RichEditor::make('content')
                     ->label('Content Body')
                     ->required()
@@ -59,6 +69,10 @@ class CourseContentResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Title')
                     ->searchable()
+                    ->sortable(),
+                
+                Tables\Columns\TextColumn::make('position')
+                    ->label('Position')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('courseSection.name')

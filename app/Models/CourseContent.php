@@ -18,6 +18,16 @@ class CourseContent extends Model
     ];
 
 
+    protected $appends = ['is_completed'];
+
+    public function getIsCompletedAttribute()
+    {
+        if (auth('api')->check()) {
+            return $this->courseProgress->where('user_id', auth('api')->id())->isNotEmpty();
+        }
+        return false;
+    }
+
     public function courseSection(): BelongsTo
     {
         return $this->belongsTo(CourseSection::class);

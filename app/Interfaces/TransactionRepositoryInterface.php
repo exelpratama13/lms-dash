@@ -3,16 +3,16 @@
 namespace App\Interfaces;
 
 use App\Models\Transaction;
-use App\Models\CourseProgress;
 use App\Models\CourseStudent;
+use Illuminate\Database\Eloquent\Collection; // Add this line
 
 interface TransactionRepositoryInterface
 {
     public function createTransaction(array $data): Transaction;
-    public function createCourseStudent(array $data): CourseStudent;
-    public function getTransactionsByUserId(int $userId): \Illuminate\Database\Eloquent\Collection;
-    public function find(string $bookingTrxId, int $userId): ?Transaction; // Added
-
     public function getLastTransactionCode(): ?string;
-    // public function createCourseProgress(array $data): CourseProgress;
+    public function getTransactionsByUserId(int $userId): Collection;
+    public function find(string $bookingTrxId, int $userId): ?Transaction;
+    public function createCourseStudent(array $data): CourseStudent;
+    public function generateSequentialTransactionCode(): string;
+    public function updateTransaction(Transaction $transaction, array $data): bool;
 }

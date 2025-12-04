@@ -27,6 +27,8 @@ use App\Repositories\TransactionRepository;
 use App\Services\CourseSectionService;
 use App\Services\PricingService;
 use App\Services\TransactionService;
+use App\Interfaces\MidtransServiceInterface;
+use App\Services\MidtransService;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -92,6 +94,22 @@ class RepositoryServiceProvider extends ServiceProvider
             TransactionRepository::class
         );
 
+        //Bind Midtrans
+        $this->app->bind(
+            MidtransServiceInterface::class,
+            MidtransService::class
+        );
+
+        // Bind New Transaction Service
+        $this->app->bind(
+            \App\Interfaces\NewTransactionServiceInterface::class,
+            \App\Services\NewTransactionService::class
+        );
+        $this->app->bind(
+            \App\Interfaces\NewTransactionRepositoryInterface::class,
+            \App\Repositories\NewTransactionRepository::class
+        );
+
         //Bind Quiz Attempt
         $this->app->bind(
             \App\Interfaces\QuizAttemptServiceInterface::class,
@@ -110,6 +128,16 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             \App\Interfaces\CourseProgressRepositoryInterface::class,
             \App\Repositories\CourseProgressRepository::class
+        );
+
+        //Bind Midtrans Webhook
+        $this->app->bind(
+            \App\Interfaces\MidtransWebhookServiceInterface::class,
+            \App\Services\MidtransWebhookService::class
+        );
+        $this->app->bind(
+            \App\Interfaces\MidtransWebhookRepositoryInterface::class,
+            \App\Repositories\MidtransWebhookRepository::class
         );
     }
 

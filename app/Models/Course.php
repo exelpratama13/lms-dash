@@ -26,14 +26,41 @@ class Course extends Model
         'is_popular' => 'boolean',
     ];
 
-    /**
-     * Append computed attributes when serializing the model.
-     * `thumbnail_url` will return full URL including '/storage/' prefix.
-     */
+    protected $hidden = [
+        'pricings',
+        'batches',
+    ];
+
     protected $appends = [
         'thumbnail_url',
         'creation_year',
+        'price',
     ];
+
+    public function getPriceAttribute()
+    {
+        // Eager load relationships if they are not already loaded to prevent N+1 issues.
+        $this->loadMissing(['batches.pricing', 'pricings']);
+
+        // Filter for active batches (end_date is in the future).
+        $activeBatches = $this->batches->where('end_date', '>=', now());
+
+        if ($activeBatches->isNotEmpty()) {
+            // Find the minimum price from the pricings of all active batches.
+            $minPrice = $activeBatches->map(function ($batch) {
+                return $batch->pricing ? (float) $batch->pricing->price : null;
+            })->filter()->min(); // filter() removes nulls before finding the min.
+
+            if ($minPrice !== null) {
+                return $minPrice;
+            }
+        }
+
+        // Fallback for on-demand courses (no active batches or batches without price).
+        $cheapestOnDemand = $this->pricings->sortBy('price')->first();
+        return $cheapestOnDemand ? (float) $cheapestOnDemand->price : null;
+    }
+
 
     /**
      * Get the year the course was created.
@@ -97,6 +124,11 @@ class Course extends Model
         return $this->hasMany(Transaction::class);
     }
 
+    public function progress(): HasMany
+    {
+        return $this->hasMany(CourseProgress::class);
+    }
+
     /**
      * Get full URL for thumbnail (includes storage prefix and app URL).
      */
@@ -123,3 +155,4 @@ class Course extends Model
         return url('storage/' . $path);
     }
 }
+

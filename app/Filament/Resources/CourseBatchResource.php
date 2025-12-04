@@ -25,6 +25,11 @@ class CourseBatchResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -37,6 +42,12 @@ class CourseBatchResource extends Resource
                     ->label('quota')
                     ->required()
                     ->maxLength(3),
+                Select::make('pricing_id')
+                    ->relationship('pricing', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required()
+                    ->label('Paket Harga (Pricing)'),
                 Select::make('mentor_id')
                     ->label('Mentor')
                     ->options(

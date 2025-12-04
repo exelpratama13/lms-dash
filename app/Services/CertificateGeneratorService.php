@@ -34,8 +34,8 @@ class CertificateGeneratorService
         // Render the Blade view to HTML
         $html = view('certificates.certificate', $data)->render();
 
-        // Generate PDF
-        $pdf = Pdf::loadHtml($html);
+        // Generate PDF with custom 16:9 ratio (e.g., 1280x720) and landscape orientation
+        $pdf = Pdf::loadHtml($html)->setPaper([0, 0, 720.00, 1280.00], 'landscape');
 
         // Define file path
         $fileName = 'certificates/' . $certificate->code . '_' . $certificate->user->id . '_' . $certificate->course->id . '.pdf';

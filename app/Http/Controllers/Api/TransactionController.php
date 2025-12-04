@@ -23,17 +23,29 @@ class TransactionController extends Controller
     {
         try {
             $validatedData = $request->validated();
-            
-            // Tambahkan user_id dari user yang sedang login
             $validatedData['user_id'] = auth()->id();
-            
-            $transaction = $this->service->storeTransaction($validatedData);
 
+            // The service will now handle both free and paid courses
+            $transaction = $this->service->createMidtransTransaction($validatedData);
+
+            // If a snap token exists, it's a paid course requiring payment
+            if ($transaction->midtrans_snap_token) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Midtrans payment initiated successfully.',
+                    'data' => [
+                        'snap_token' => $transaction->midtrans_snap_token,
+                        'booking_trx_id' => $transaction->booking_trx_id,
+                    ],
+                ], 201);
+            }
+
+            // If no snap token, it was a free course that was enrolled immediately
             return response()->json([
                 'status' => 'success',
-                'message' => 'Transaction created successfully. Waiting for payment.',
+                'message' => 'Free course enrolled successfully.',
                 'data' => $transaction,
-            ], 201); // Menggunakan 201 Created
+            ], 201);
 
         } catch (\Exception $e) {
             // Error 500 jika ada masalah di server/database/service
@@ -106,6 +118,49 @@ class TransactionController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to retrieve transaction details: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Membuat Transaksi Midtrans baru (versi baru).
+     */
+    public function storeNewMidtransTransaction(StoreTransactionRequest $request): JsonResponse
+    {
+        try {
+            $validatedData = $request->validated();
+            $validatedData['user_id'] = auth()->id();
+
+            // The service now handles both free and paid courses
+            $transaction = $this->service->createMidtransTransaction($validatedData);
+
+            // If a snap token exists, it's a paid course requiring payment
+            if ($transaction->midtrans_snap_token) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'New Midtrans payment initiated successfully.',
+                    'data' => [
+                        'snap_token' => $transaction->midtrans_snap_token,
+                    ],
+                ], 201);
+            }
+
+            // If no snap token, it was a free course that was enrolled immediately
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Free course enrolled successfully.',
+                'data' => $transaction,
+            ], 201);
+
+        } catch (\Exception $e) {
+            // Log the error for debugging purposes
+            \Illuminate\Support\Facades\Log::error('Transaction creation failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create new transaction: ' . $e->getMessage(),
             ], 500);
         }
     }

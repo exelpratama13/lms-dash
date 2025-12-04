@@ -21,6 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\ImageColumn;
 
 class TransactionResource extends Resource
 {
@@ -30,6 +31,10 @@ class TransactionResource extends Resource
 
     protected static ?string $navigationGroup = 'Payment';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
 
     public static function form(Form $form): Form
     {
@@ -141,10 +146,9 @@ class TransactionResource extends Resource
                     ->label('Course Name')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('courseBatch.name')
-                    ->label('Course Batch')
-                    ->searchable()
-                    ->sortable(),
+                ImageColumn::make('proof_url')
+                    ->label('Proof of Payment')
+                    ->square(),
                 TextColumn::make('grand_total_amount')
                     ->label('Grand Total')
                     ->searchable()
@@ -174,6 +178,12 @@ class TransactionResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\Action::make('view_proof')
+                    ->label('View Proof')
+                    ->icon('heroicon-o-document-text')
+                    ->url(fn (Transaction $record): ?string => $record->proof_url)
+                    ->openUrlInNewTab()
+                    ->visible(fn (Transaction $record): bool => !empty($record->proof)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage; // Added
-use Illuminate\Validation\Rule; // Added
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Config;
 
 class AuthController extends Controller
 {
@@ -21,8 +23,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        // Middleware 'auth:api' akan melindungi semua metode kecuali 'login'
-        // $this->middleware('auth:api', ['except' => ['login']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register', 'refresh']]);
     }
 
     /**
@@ -53,145 +54,191 @@ class AuthController extends Controller
             ], 403);
         }
 
-        return $this->respondWithToken($token);
-    }
+        // Generate and store refresh token
+        $refreshToken = Str::random(60);
+        $refreshTokenExpiresAt = now()->addMinutes((int) Config::get('jwt.refresh_ttl'));
 
-    /**
-     * Register a new user.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function register(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        $user->assignRole('student');
-
-        return response()->json([
-            'message' => 'User successfully registered',
-            'user' => $user
-        ], 201);
-    }
-
-    /**
-     * Get the authenticated User.
-     *
-     * @return JsonResponse
-     */
-    public function me(): JsonResponse
-    {
-        return response()->json(auth('api')->user());
-    }
-
-    /**
-     * Update the authenticated user's profile.
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function updateProfile(Request $request): JsonResponse
-    {
-        $user = auth('api')->user();
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|string|max:255',
-            'email' => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)], // Added
-            'password' => 'sometimes|string|min:8|confirmed',
-            'photo' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Added
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        if ($request->has('name')) {
-            $user->name = $request->name;
-        }
-
-        if ($request->has('email')) { // Added
-            $user->email = $request->email;
-        }
-
-        if ($request->has('password')) {
-            $user->password = Hash::make($request->password);
-        }
-
-        if ($request->hasFile('photo')) { // Added
-            // Delete old photo if exists
-            if ($user->photo) {
-                Storage::disk('public')->delete($user->photo);
+        $user->refresh_token = Hash::make($refreshToken);
+                $user->refresh_token_expires_at = $refreshTokenExpiresAt;
+                $user->save();
+        
+                return $this->respondWithToken($token, $user, $refreshToken);
             }
-            // Store new photo
-            $photoPath = $request->file('photo')->store('photos', 'public');
-            $user->photo = $photoPath;
+        
+            /**
+             * Register a new user.
+             *
+             * @param Request $request
+             * @return JsonResponse
+             */
+            public function register(Request $request): JsonResponse
+            {
+                $validator = Validator::make($request->all(), [
+                    'name' => 'required|string|max:255',
+                    'email' => 'required|string|email|max:255|unique:users',
+                    'password' => 'required|string|min:8|confirmed',
+                ]);
+        
+                if ($validator->fails()) {
+                    return response()->json($validator->errors(), 422);
+                }
+        
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                ]);
+        
+                $user->assignRole('student');
+        
+                return response()->json([
+                    'message' => 'User successfully registered',
+                    'user' => $user
+                ], 201);
+            }
+        
+            /**
+             * Get the authenticated User.
+             *
+             * @return JsonResponse
+             */
+            public function me(): JsonResponse
+            {
+                return response()->json(auth('api')->user());
+            }
+        
+            /**
+             * Update the authenticated user's profile.
+             *
+             * @param Request $request
+             * @return JsonResponse
+             */
+            public function updateProfile(Request $request): JsonResponse
+            {
+                $user = auth('api')->user();
+        
+                $validator = Validator::make($request->all(), [
+                    'name' => 'sometimes|string|max:255',
+                    'email' => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)], // Added
+                    'password' => 'sometimes|string|min:8|confirmed',
+                    'photo' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Added
+                ]);
+        
+                if ($validator->fails()) {
+                    return response()->json($validator->errors(), 422);
+                }
+        
+                if ($request->has('name')) {
+                    $user->name = $request->name;
+                }
+        
+                if ($request->has('email')) { // Added
+                    $user->email = $request->email;
+                }
+        
+                if ($request->has('password')) {
+                    $user->password = Hash::make($request->password);
+                }
+        
+                if ($request->hasFile('photo')) { // Added
+                    // Delete old photo if exists
+                    if ($user->photo) {
+                        Storage::disk('public')->delete($user->photo);
+                    }
+                    // Store new photo
+                    $photoPath = $request->file('photo')->store('photos', 'public');
+                    $user->photo = $photoPath;
+                }
+        
+                $user->save();
+        
+                return response()->json([
+                    'message' => 'Profile successfully updated',
+                    'user' => $user
+                ]);
+            }
+        
+            /**
+             * Log the user out (Invalidate the token).
+             *
+             * @return JsonResponse
+             */
+            public function logout(): JsonResponse
+            {
+                auth('api')->logout();
+        
+                return response()->json(['message' => 'Successfully logged out']);
+            }
+        
+            /**
+             * Refresh a token.
+             *
+             * @param Request $request
+             * @return JsonResponse
+             */
+            public function refresh(Request $request): JsonResponse
+            {
+                $validator = Validator::make($request->all(), [
+                    'refresh_token' => 'required|string',
+                ]);
+        
+                if ($validator->fails()) {
+                    return response()->json($validator->errors(), 422);
+                }
+        
+                $incomingRefreshToken = $request->refresh_token;
+        
+                // Find user by their stored refresh token (hashed)
+                $user = User::whereNotNull('refresh_token')
+                            ->where('refresh_token_expires_at', '>', now())
+                            ->get()
+                            ->filter(function ($user) use ($incomingRefreshToken) {
+                                return Hash::check($incomingRefreshToken, $user->refresh_token);
+                            })->first();
+        
+                if (!$user) {
+                    return response()->json(['message' => 'Invalid or expired refresh token.'], 401);
+                }
+        
+                // Generate a new access token for the user
+                $newAccessToken = auth('api')->fromUser($user);
+        
+                        // Generate and store new refresh token for rotation
+                        $newRefreshToken = Str::random(60);
+                        $newRefreshTokenExpiresAt = now()->addMinutes((int) Config::get('jwt.refresh_ttl'));
+                        $user->refresh_token = Hash::make($newRefreshToken);                $user->refresh_token_expires_at = $newRefreshTokenExpiresAt;
+                $user->save();
+        
+                return $this->respondWithToken($newAccessToken, $user, $newRefreshToken);
+            }
+        
+            /**
+             * Get the token array structure.
+             *
+             * @param  string $token
+             * @param  \App\Models\User $user
+             * @param  string|null $refreshToken
+             * @return JsonResponse
+             */
+            protected function respondWithToken(string $token, User $user, ?string $refreshToken = null): JsonResponse
+            {
+                $response = [
+                    'access_token' => $token,
+                    'token_type' => 'bearer',
+                    'expires_in' => auth('api')->factory()->getTTL() * 60,
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'roles' => $user->getRoleNames(),
+                    ]
+                ];
+        
+                if ($refreshToken) {
+                    $response['refresh_token'] = $refreshToken;
+                }
+        
+                return response()->json($response);
+            }
+        
         }
-
-        $user->save();
-
-        return response()->json([
-            'message' => 'Profile successfully updated',
-            'user' => $user
-        ]);
-    }
-
-    /**
-     * Log the user out (Invalidate the token).
-     *
-     * @return JsonResponse
-     */
-    public function logout(): JsonResponse
-    {
-        auth('api')->logout();
-
-        return response()->json(['message' => 'Successfully logged out']);
-    }
-
-    /**
-     * Refresh a token.
-     *
-     * @return JsonResponse
-     */
-    public function refresh(): JsonResponse
-    {
-        return $this->respondWithToken(auth('api')->refresh());
-    }
-
-    /**
-     * Get the token array structure.
-     *
-     * @param  string $token
-     * @return JsonResponse
-     */
-    protected function respondWithToken(string $token): JsonResponse
-    {
-        $user = auth('api')->user();
-
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'roles' => $user->getRoleNames(),
-            ]
-        ]);
-    }
-
-}

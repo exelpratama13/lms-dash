@@ -17,6 +17,11 @@ class CoursePricingResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-document-currency-dollar';
     protected static ?string $navigationGroup = 'Payment';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
+
     public static function form(Form $form): Form
     {
         return $form

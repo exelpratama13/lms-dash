@@ -17,6 +17,11 @@ class QuizResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationGroup = 'Quizzes';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
+
     public static function form(Form $form): Form
     {
         return $form

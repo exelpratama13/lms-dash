@@ -40,6 +40,26 @@ class CourseController extends Controller
         }
     }
 
+    public function search(Request $request): JsonResponse
+    {
+        try {
+            $query = $request->input('q');
+            $courses = $this->courseService->searchCourses($query);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Course search results retrieved successfully',
+                'count' => $courses->count(),
+                'data' => $courses,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to search for courses: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     //  * Mengambil daftar Course yang Populer.
     public function getPopularCourses(): JsonResponse
     {

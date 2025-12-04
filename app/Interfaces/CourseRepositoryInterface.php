@@ -3,7 +3,7 @@
 namespace App\Interfaces;
 
 use App\Models\Course;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 interface CourseRepositoryInterface
 {
@@ -17,6 +17,8 @@ interface CourseRepositoryInterface
     public function getCoursesByCategorySlug(string $categorySlug): Collection;
 
     public function getMyCourses(int $userId): Collection;
+
+    public function searchCourses(string $query): Collection;
 
     public function createCourse(array $data): Course;
 

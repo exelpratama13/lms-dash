@@ -28,4 +28,9 @@ class PricingRepository implements PricingRepositoryInterface
                 ->get();
         */
     }
+
+    public function findById(int $id)
+    {
+        return Pricing::findOrFail($id);
+    }
 }

@@ -16,9 +16,9 @@ use App\Http\Controllers\Api\QuizAttemptController;
 // Auth
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/refresh', [AuthController::class, 'refresh']);
 Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/me', [AuthController::class, 'updateProfile']);
 
@@ -34,17 +34,24 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // My Certificates
     Route::get('/my-certificates', [CertificateController::class, 'myCertificates']);
-
+    Route::post('/certificates', [CertificateController::class, 'store'])->middleware('auth:api');
+    
     // Show single transaction
     Route::get('/transactions/{bookingTrxId}', [TransactionController::class, 'show']);
 });
 
-//course populer, detail course, all-course, course by category, CRUD mentor
+//course populer, detail course, all-course, course by category
+Route::get('/courses/search', [CourseController::class, 'search']);
 Route::get('/courses/popular', [CourseController::class, 'getPopularCourses']);
 Route::get('/courses/{slug}', [CourseController::class, 'show']);
 Route::get('/courses', [CourseController::class, 'index']);
 Route::get('/courses/category/{categorySlug}', [CourseController::class, 'courseByCategory']);
-Route::get('/materi/{slug}', [CourseController::class, 'materi']);
+
+// Routes for accessing course materials, protected by auth and access check
+Route::middleware(['auth:api', \App\Http\Middleware\CheckCourseAccess::class])->group(function () {
+    Route::get('/materi/{slug}', [CourseController::class, 'materi']);
+    Route::get('/courses/{courseId}/sections', [CourseSectionController::class, 'listSections']);
+});
 
 //CRUD Course
 Route::middleware('auth:api')->group(function () {
@@ -66,7 +73,6 @@ Route::middleware('auth:api')->group(function () {
 });
 
 // course section & content
-Route::get('/courses/{courseId}/sections', [CourseSectionController::class, 'listSections']);
 Route::get('/sections/{sectionId}', [CourseSectionController::class, 'showSection']);
 Route::get('/sections/{sectionId}/contents', [CourseSectionController::class, 'listContents']);
 Route::get('/contents/{contentId}', [CourseSectionController::class, 'showContent']);
@@ -75,7 +81,13 @@ Route::get('/contents/{contentId}', [CourseSectionController::class, 'showConten
 Route::get('courses/{courseId}/pricings', [PricingController::class, 'listPricings']);
 
 //transaction
-Route::post('transactions', [TransactionController::class, 'store'])->middleware('auth:api');
+Route::post('transactions', [TransactionController::class, 'store'])->middleware('auth:api'); // Can be used for Midtrans by setting "payment_type": "midtrans"
+Route::post('transactions/new-midtrans-payment', [TransactionController::class, 'storeNewMidtransTransaction'])->middleware('auth:api'); // New endpoint for Midtrans payment initiation
+
+// New separate endpoint for Midtrans payment initiation
+Route::post('new-transactions/midtrans-payment', [\App\Http\Controllers\Api\NewTransactionController::class, 'store'])->middleware('auth:api');
+
+Route::post('payments/initiate', [\App\Http\Controllers\Api\PaymentController::class, 'store'])->middleware('auth:api'); // Dedicated endpoint for payment initiation
 
 
 //category, popular category (-1)
@@ -93,6 +105,7 @@ Route::get('/mentors/category/{categorySlug}', [MentorController::class, 'mentor
 Route::get('/counts', [StatsController::class, 'getCounts']);
 
 //midtrans
+Route::post('/midtrans/webhook', [\App\Http\Controllers\Api\MidtransWebhookController::class, 'handle']);
 
 //quizz
 Route::middleware('auth:api')->group(function () {

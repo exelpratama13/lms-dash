@@ -10,40 +10,58 @@ class CourseStudent extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'user_id',
         'course_id',
-        'course_batch_id', // Tambahkan ini
+        'course_batch_id',
+        'pricing_id',
+        'access_starts_at',
         'access_expires_at',
+        'enrollment_type',
+        'is_active',
     ];
 
-    /**
-     * Get the user that is the student.
-     */
+    protected $casts = [
+        'access_starts_at' => 'datetime',
+        'access_expires_at' => 'datetime',
+        'is_active' => 'boolean',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the course that the student belongs to.
-     */
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
     }
 
-    /**
-     * Get the batch that the student belongs to.
-     */
     public function batch(): BelongsTo
     {
-        // Secara eksplisit memberitahu Laravel nama foreign key yang benar
         return $this->belongsTo(CourseBatch::class, 'course_batch_id');
+    }
+
+    public function pricing(): BelongsTo
+    {
+        return $this->belongsTo(Pricing::class);
+    }
+
+    /**
+     * Check if student still has active access
+     */
+    public function hasActiveAccess(): bool
+    {
+        if (!$this->is_active) {
+            return false;
+        }
+
+        // Lifetime/no expiration
+        if ($this->access_expires_at === null) {
+            return true;
+        }
+
+        // Check if not expired
+        return now()->isBefore($this->access_expires_at);
     }
 }

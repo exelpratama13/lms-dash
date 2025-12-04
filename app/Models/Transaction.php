@@ -27,11 +27,32 @@ class Transaction extends Model
         'is_paid',
         'payment_type',
         'proof',
+        'midtrans_snap_token',
+        'transaction_code',
     ];
 
     protected $casts = [
         'is_paid' => 'boolean',
     ];
+
+    protected $appends = [
+        'proof_url',
+    ];
+
+    public function getProofUrlAttribute(): ?string
+    {
+        $proof = $this->attributes['proof'] ?? null;
+
+        if (empty($proof)) {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $proof)) {
+            return $proof;
+        }
+
+        return url('storage/' . ltrim($proof, '/'));
+    }
 
     public function user(): BelongsTo
     {

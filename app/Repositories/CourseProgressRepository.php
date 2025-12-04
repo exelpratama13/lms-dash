@@ -11,35 +11,29 @@ use Illuminate\Support\Facades\Log;
 
 class CourseProgressRepository implements CourseProgressRepositoryInterface
 {
-    public function markAsComplete($userId, $courseId, $contentId)
+    public function markAsComplete($userId, $courseId, $contentId, $batchId)
     {
-        Log::info('markAsComplete called with:', compact('userId', 'courseId', 'contentId'));
+        Log::info('markAsComplete called with:', compact('userId', 'courseId', 'contentId', 'batchId'));
 
-        $user = User::find($userId);
-        $content = CourseContent::find($contentId);
-
-        // Find the enrollment record to get the batch ID
-        $enrollment = \App\Models\CourseStudent::where('user_id', $userId)
-            ->where('course_id', $courseId)
-            ->first();
-
-        Log::info('Enrollment found:', ['enrollment' => $enrollment]);
-
-        if (!$enrollment) {
-            // This should ideally be handled in the service layer, but as a safeguard:
-            throw new \Exception("User is not enrolled in this course.");
+        // Pengecekan enrollment sekarang ditangani di service layer.
+        // Kita bisa langsung menggunakan data yang sudah divalidasi.
+        $content = \App\Models\CourseContent::find($contentId);
+        if (!$content) {
+            throw new \Exception("Course content not found.");
         }
-
-        $result = CourseProgress::updateOrCreate(
+        
+        // `course_batch_id` dimasukkan ke dalam array pertama (kondisi pencarian)
+        // untuk memastikan keunikan data progress per batch.
+        $result = \App\Models\CourseProgress::updateOrCreate(
             [
                 'user_id' => $userId,
                 'course_id' => $courseId,
                 'course_content_id' => $contentId,
+                'course_batch_id' => $batchId, 
             ],
             [
                 'is_completed' => true,
                 'completed_at' => now(),
-                'course_batch_id' => $enrollment->course_batch_id,
                 'course_section_id' => $content->course_section_id,
             ]
         );

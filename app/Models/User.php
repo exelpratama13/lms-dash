@@ -28,7 +28,7 @@ class User extends Authenticatable implements FilamentUser, JWTSubject
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->hasRole('admin');
+        return $this->hasAnyRole(['admin', 'mentor']);
     }
 
     protected $fillable = [
@@ -37,12 +37,16 @@ class User extends Authenticatable implements FilamentUser, JWTSubject
         'password',
         'photo',
         'is_active',
+        'refresh_token',
+        'refresh_token_expires_at',
     ];
 
 
     protected $hidden = [
         'password',
         'remember_token',
+        'refresh_token',
+        'refresh_token_expires_at',
 
     ];
 
@@ -94,5 +98,25 @@ class User extends Authenticatable implements FilamentUser, JWTSubject
     public function courseMentors(): HasMany
     {
         return $this->hasMany(CourseMentor::class, 'user_id');
+    }
+
+    public function taughtBatches(): HasMany
+    {
+        return $this->hasMany(CourseBatch::class, 'mentor_id');
+    }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        $photo = $this->attributes['photo'] ?? null;
+
+        if (empty($photo)) {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $photo)) {
+            return $photo;
+        }
+
+        return url('storage/' . ltrim($photo, '/'));
     }
 }

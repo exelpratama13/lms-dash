@@ -10,20 +10,34 @@ class EditCourse extends EditRecord
 {
     protected static string $resource = CourseResource::class;
 
-    protected function mutateFormDataBeforeSave(array $data): array
-    {
-        if (isset($data['thumbnail'])) {
-            // Convert relative thumbnail path to full URL for storage
-            $data['thumbnail'] = url('storage/' . $data['thumbnail']);
-        }
-
-        return $data;
-    }
-
     protected function getHeaderActions(): array
     {
         return [
             Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $record = $this->getRecord();
+
+        if ($record->batches->isNotEmpty()) {
+            $data['course_type'] = 'batch';
+        } else {
+            $data['course_type'] = 'on_demand';
+        }
+
+        return $data;
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        // If no new thumbnail is uploaded, the field will be null.
+        // We unset it from the data array so that the existing value in the database is not overwritten.
+        if ($data['thumbnail'] === null) {
+            unset($data['thumbnail']);
+        }
+
+        return $data;
     }
 }

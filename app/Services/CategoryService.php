@@ -20,8 +20,6 @@ class CategoryService implements CategoryServiceInterface
         $categories = $this->categoryRepository->getAllCategories();
 
         // Contoh Logika Bisnis: Hanya kembalikan kategori yang memiliki setidaknya 1 course
-        return $categories->filter(function ($category) {
-            return $category->courses_count > 0;
-        });
+        return $categories;
     }
 }

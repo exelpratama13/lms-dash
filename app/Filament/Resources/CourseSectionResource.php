@@ -17,6 +17,11 @@ class CourseSectionResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
     // protected static ?string $navigationGroup = 'Courses';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasRole('admin');
+    }
+
     public static function form(Form $form): Form
     {
         return $form

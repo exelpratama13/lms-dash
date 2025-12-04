@@ -94,6 +94,13 @@
         <div class="certificate-recipient">{{ $user->name ?? 'Nama Peserta' }}</div>
         <div class="certificate-text">has successfully completed the course</div>
         <div class="certificate-course">{{ $course->name ?? 'Nama Kursus' }}</div>
+
+        @if(isset($certificate->courseBatch) && $certificate->courseBatch->name)
+            <div class="certificate-text" style="font-size: 1.2em; margin-top: -30px; margin-bottom: 30px;">
+                Batch: {{ $certificate->courseBatch->name }}
+            </div>
+        @endif
+
         <div class="certificate-text">on</div>
         <div class="certificate-date">{{ $completion_date ?? \Carbon\Carbon::now()->format('F d, Y') }}</div>
 
