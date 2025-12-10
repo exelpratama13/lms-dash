@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Wizard\Step;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -53,50 +54,76 @@ class CourseResource extends Resource
     {
         return $form->schema([
             Wizard::make([
-                Step::make('Course Information')
+                Step::make('Informasi Kursus')
+                    ->columns(2)
                     ->schema([
-                        TextInput::make('name')
-                            ->required()
-                            ->maxLength(255)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(fn (callable $set, $state) => $set('slug', Str::slug($state))),
-                        TextInput::make('slug')
-                            ->required()
-                            ->unique(Course::class, 'slug', ignoreRecord: true)
-                            ->hidden(),
-                        Placeholder::make('thumbnail_preview')
-                            ->label('Current Thumbnail')
-                            ->content(function ($record) {
-                                if ($record && $record->thumbnail_url) {
-                                    return new HtmlString('<img src="' . $record->thumbnail_url . '" style="max-width: 200px; height: auto;">');
-                                }
-                                return 'No thumbnail uploaded.';
-                            })
-                            ->visibleOn('edit'),
-                        FileUpload::make('thumbnail')
-                            ->label('Upload New Thumbnail')
-                            ->directory('thumbnails')
-                            ->image()
-                            ->imageResizeMode('cover')
-                            ->imagePreviewHeight('100'),
-                        Textarea::make('about')
-                            ->rows(4),
-                        Select::make('category_id')
-                            ->relationship('category', 'name')
-                            ->required(),
-                        Toggle::make('is_popular')
-                            ->label('Popular Course')
-                            ->default(false),
-                        Repeater::make('benefits')
-                            ->relationship()
+                        // Left Column
+                        Group::make()
                             ->schema([
-                                TextInput::make('name')->label('Benefit Title')->required(),
-                                Textarea::make('description')->rows(2)->required(),
+                                Placeholder::make('custom-repeater-styles')
+                                    ->label(false)
+                                    ->content(new HtmlString('<style>.sections-repeater > div.justify-center, .contents-repeater > div.justify-center { justify-content: flex-start !important; }</style>')),
+                                TextInput::make('name')
+                                    ->label('Nama Kursus')
+                                    ->prefixIcon('heroicon-o-academic-cap')
+                                    ->helperText('Tulis judul utama untuk kursus ini.')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(fn (callable $set, $state) => $set('slug', Str::slug($state))),
+                                TextInput::make('slug')
+                                    ->required()
+                                    ->unique(Course::class, 'slug', ignoreRecord: true)
+                                    ->hidden(),
+                                Textarea::make('about')
+                                    ->label('Tentang Kursus')
+                                    ->rows(4),
+                                Select::make('category_id')
+                                    ->label('Kategori')
+                                    ->relationship('category', 'name')
+                                    ->required(),
+                                Toggle::make('is_popular')
+                                    ->label('Kursus Populer')
+                                    ->default(false),
+                            ])->columnSpan(1),
+
+                        // Right Column
+                        Group::make()
+                            ->schema([
+                                Placeholder::make('thumbnail_preview')
+                                    ->label('Pratinjau Thumbnail')
+                                    ->content(function ($record) {
+                                        if ($record && $record->thumbnail_url) {
+                                            return new HtmlString('<img src="' . $record->thumbnail_url . '" style="max-width: 200px; height: auto;">');
+                                        }
+                                        return 'Tidak ada thumbnail.';
+                                    })
+                                    ->visibleOn('edit'),
+                                FileUpload::make('thumbnail')
+                                    ->label('Unggah Thumbnail Baru')
+                                    ->directory('thumbnails')
+                                    ->image()
+                                    ->imageResizeMode('cover')
+                                    ->imagePreviewHeight('100'),
+                            ])->columnSpan(1),
+
+                        // Full-width components at the bottom
+                        Repeater::make('benefits')
+                            ->label('Manfaat')
+                            ->relationship()
+                            ->addActionLabel('Tambahkan Manfaat')
+                            ->schema([
+                                TextInput::make('name')->label('Judul Manfaat')->required(),
+                                Textarea::make('description')->label('Deskripsi Manfaat')->rows(2)->required(),
                             ])
+                            ->minItems(1)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state) => $state['name'] ?? 'Manfaat Baru')
                             ->columnSpan('full'),
                         (function () {
                             $user = auth()->user();
                             $mentorsRepeater = Repeater::make('mentors')
+                                ->collapsible()
                                 ->relationship()
                                 ->schema([
                                     Select::make('user_id')
@@ -110,8 +137,8 @@ class CourseResource extends Resource
                                         ->default(fn () => $user->hasRole('mentor') ? $user->id : null)
                                         ->disabled($user->hasRole('mentor'))
                                         ->required(),
-                                    TextInput::make('job')->label('Job Title'),
-                                    Textarea::make('about')->label('About Mentor'),
+                                    TextInput::make('job')->label('Jabatan'),
+                                    Textarea::make('about')->label('Tentang Mentor'),
                                 ])
                                 ->required();
 
@@ -127,27 +154,50 @@ class CourseResource extends Resource
                             return $mentorsRepeater;
                         })(),
                     ]),
-                Step::make('Course Structure & Quizzes')
+                Step::make('Struktur Kursus & Kuis')
                     ->schema([
                         Repeater::make('sections')
+                            ->addAction(fn (Action $action) => $action
+                                ->label('Tambah Bagian Baru')
+                                ->icon('heroicon-o-plus-circle')
+                                ->color('success')
+                            )
                             ->relationship()
                             ->orderable('position')
+                            ->collapsible()
+                            ->minItems(1)
+                            ->itemLabel(fn (array $state) => $state['name'] ?? 'Bagian Baru')
+                            ->extraAttributes(['class' => 'sections-repeater'])
                             ->schema([
-                                TextInput::make('name')->required(),
+                                TextInput::make('name')->label('Nama Bagian')->required(),
                                 Repeater::make('contents')
+                                    ->addAction(fn (Action $action) => $action
+                                        ->label('Tambah Konten Baru')
+                                        ->icon('heroicon-o-plus')
+                                        ->color('info')
+                                    )
                                     ->relationship()
                                     ->orderable('position')
+                                    ->collapsible()
+                                    ->minItems(1)
+                                    ->itemLabel(fn (array $state) => $state['name'] ?? 'Konten Baru')
+                                    ->extraAttributes(['class' => 'contents-repeater'])
                                     ->schema([
-                                        TextInput::make('name')->required(),
-                                        RichEditor::make('content'),
+                                        TextInput::make('name')->label('Nama Konten')->required(),
+                                        RichEditor::make('content')->label('Konten Detail'),
                                         Toggle::make('has_video')
-                                            ->label('Include a video for this content?')
-                                            ->live(),
+                                            ->label('Sertakan video untuk konten ini?')
+                                            ->live()
+                                            ->afterStateHydrated(function (Toggle $component, ?\Illuminate\Database\Eloquent\Model $record) {
+                                                if ($record) {
+                                                    $component->state(!is_null($record->video));
+                                                }
+                                            }),
                                         Group::make()
                                             ->relationship('video')
                                             ->schema([
                                                 TextInput::make('id_youtube')
-                                                    ->label('YouTube Video ID')
+                                                    ->label('ID Video YouTube')
                                                     ->live()
                                                     ->afterStateUpdated(function (callable $set, ?string $state) {
                                                         // Regex to extract YouTube video ID from various URL formats
@@ -158,7 +208,7 @@ class CourseResource extends Resource
                                                     })
                                                     ->required(),
                                                 Placeholder::make('video_preview')
-                                                    ->label('Video Preview')
+                                                    ->label('Pratinjau Video')
                                                     ->content(function (callable $get): ?HtmlString {
                                                         $youtubeId = $get('id_youtube');
                                                         if (is_string($youtubeId) && !empty($youtubeId)) {
@@ -172,13 +222,18 @@ class CourseResource extends Resource
                                             ])
                                             ->visible(fn(Forms\Get $get) => $get('has_video')),
                                         Toggle::make('has_attachment')
-                                            ->label('Include an attachment for this content?')
-                                            ->live(),
+                                            ->label('Sertakan lampiran untuk konten ini?')
+                                            ->live()
+                                            ->afterStateHydrated(function (Toggle $component, ?\Illuminate\Database\Eloquent\Model $record) {
+                                                if ($record) {
+                                                    $component->state(!is_null($record->attachment));
+                                                }
+                                            }),
                                         Group::make()
                                             ->relationship('attachment')
                                             ->schema([
                                                 FileUpload::make('file')
-                                                    ->label('Attachment File')
+                                                    ->label('File Lampiran')
                                                     ->directory('course-attachments')
                                                     ->disk('public')
                                                     ->required(fn ($record) => !$record?->file)
@@ -186,28 +241,40 @@ class CourseResource extends Resource
                                             ])
                                             ->visible(fn(Forms\Get $get) => $get('has_attachment')),
                                         Toggle::make('has_quiz')
-                                            ->label('Include a quiz for this content?')
-                                            ->live(),
+                                            ->label('Sertakan kuis untuk konten ini?')
+                                            ->live()
+                                            ->afterStateHydrated(function (Toggle $component, ?\Illuminate\Database\Eloquent\Model $record) {
+                                                if ($record) {
+                                                    $component->state(!is_null($record->quiz));
+                                                }
+                                            }),
                                         Group::make()
                                             ->relationship('quiz')
                                             ->schema([
-                                                TextInput::make('title')->required(),
+                                                TextInput::make('title')->label('Judul Kuis')->required(),
                                                 Repeater::make('questions')
                                                     ->relationship()
+                                                    ->addActionLabel('Tambah Pertanyaan')
+                                                    ->collapsible()
+                                                    ->minItems(1)
+                                                    ->itemLabel(fn (array $state) => $state['question_text'] ?? 'Pertanyaan Baru')
                                                     ->schema([
-                                                        Textarea::make('question_text')->required(),
+                                                        Textarea::make('question_text')->label('Teks Pertanyaan')->required(),
                                                         Repeater::make('options')
                                                             ->relationship()
+                                                            ->addActionLabel('Tambah Opsi')
+                                                            ->collapsible()
+                                                            ->minItems(1)
                                                             ->schema([
-                                                                TextInput::make('option_text')->required(),
-                                                                Toggle::make('is_correct')->default(false),
+                                                                TextInput::make('option_text')->label('Teks Opsi')->required(),
+                                                                Toggle::make('is_correct')->label('Tandai sebagai Jawaban Benar')->default(false),
                                                             ])
                                                             ->rules([
                                                                 function () {
                                                                     return function (string $attribute, $value, \Closure $fail) {
                                                                         $correctCount = collect($value)->where('is_correct', true)->count();
                                                                         if ($correctCount > 1) {
-                                                                            $fail('You may only have one correct answer per question.');
+                                                                            $fail('Hanya boleh ada satu jawaban yang benar untuk setiap pertanyaan.');
                                                                         }
                                                                     };
                                                                 }
@@ -219,18 +286,19 @@ class CourseResource extends Resource
                                     ])->columnSpan('full')
                             ])->columnSpan('full')
                     ]),
-                Step::make('Pricing & Batches')
+                Step::make('Harga & Batch')
                     ->schema(function () {
                         $user = auth()->user();
 
                         // Define the base select for batches repeater
                         $pricingSelectInRepeater = Select::make('pricing_id')
-                            ->label('Pricing')
+                            ->label('Harga')
                             ->options(Pricing::all()->pluck('name', 'id'))
                             ->required();
                         
                         // Define the base select for on-demand
                         $pricingsSelect = Select::make('pricings')
+                            ->label('Pilihan Harga (On Demand)')
                             ->multiple()
                             ->relationship('pricings', 'name')
                             ->options(Pricing::all()->pluck('name', 'id'))
@@ -239,31 +307,31 @@ class CourseResource extends Resource
                         // If user is admin, add the createOptionForm
                         if ($user->hasRole('admin')) {
                             $pricingSelectInRepeater->createOptionForm([
-                                TextInput::make('name')->required(),
-                                TextInput::make('price')->numeric()->required(),
-                                TextInput::make('duration')->numeric()->required()->label('Duration (in days)'),
+                                TextInput::make('name')->label('Nama Opsi Harga')->required(),
+                                TextInput::make('price')->label('Harga')->numeric()->required(),
+                                TextInput::make('duration')->label('Durasi (dalam hari)')->numeric()->required(),
                             ]);
                             $pricingsSelect->createOptionForm([
-                                TextInput::make('name')->required(),
-                                TextInput::make('price')->numeric()->required(),
-                                TextInput::make('duration')->numeric()->required()->label('Duration (in days)'),
+                                TextInput::make('name')->label('Nama Opsi Harga')->required(),
+                                TextInput::make('price')->label('Harga')->numeric()->required(),
+                                TextInput::make('duration')->label('Durasi (dalam hari)')->numeric()->required(),
                             ]);
                         }
 
                         return [
                             Radio::make('course_type')
-                                ->label('Course Type')
+                                ->label('Tipe Kursus')
                                 ->options([
-                                    'batch' => 'Batch Based',
+                                    'batch' => 'Per Batch',
                                     'on_demand' => 'On Demand',
                                 ])
                                 ->live(),
                             Repeater::make('batches')
                                 ->relationship()
                                 ->schema([
-                                    TextInput::make('name')->required(),
+                                    TextInput::make('name')->label('Nama Batch')->required(),
                                     Select::make('mentor_id')
-                                        ->label('Mentor for this Batch')
+                                        ->label('Mentor untuk Batch Ini')
                                         ->options(function (callable $get) {
                                             $mentorData = $get('../../mentors');
                                             if (empty($mentorData)) {
@@ -277,11 +345,13 @@ class CourseResource extends Resource
                                             return $mentorData[0]['user_id'] ?? null;
                                         })
                                         ->required(),
-                                    TextInput::make('quota')->numeric()->required(),
-                                    DatePicker::make('start_date')->required(),
-                                    DatePicker::make('end_date')->required(),
+                                    TextInput::make('quota')->label('Kuota')->numeric()->required(),
+                                    DatePicker::make('start_date')->label('Tanggal Mulai')->required(),
+                                    DatePicker::make('end_date')->label('Tanggal Selesai')->after('start_date')->required(),
                                     $pricingSelectInRepeater,
                                 ])
+                                ->minItems(1)
+                                ->collapsible()
                                 ->visible(fn(Forms\Get $get) => $get('course_type') === 'batch')
                                 ->columnSpan('full'),
                             $pricingsSelect,
@@ -296,14 +366,15 @@ class CourseResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('thumbnail')
+                    ->label('Thumbnail')
                     ->getStateUsing(fn(Course $record) => $record->thumbnail_url)
                     ->square(),
-                Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('category.name')->label('Category'),
-                Tables\Columns\IconColumn::make('is_popular')->boolean(),
+                Tables\Columns\TextColumn::make('name')->label('Nama Kursus')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('category.name')->label('Kategori'),
+                Tables\Columns\IconColumn::make('is_popular')->label('Populer')->boolean(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('category')->relationship('category', 'name'),
+                Tables\Filters\SelectFilter::make('category')->label('Kategori')->relationship('category', 'name'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -312,7 +383,8 @@ class CourseResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ])
+->paginationPageOptions([5, 10, 25, 50, 100]);
     }
 
     public static function getRelations(): array
@@ -331,3 +403,4 @@ class CourseResource extends Resource
         ];
     }
 }
+

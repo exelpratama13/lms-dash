@@ -14,6 +14,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class TransactionService implements TransactionServiceInterface
 {
@@ -27,8 +28,7 @@ class TransactionService implements TransactionServiceInterface
         PricingRepositoryInterface     $pricingRepository,
         CourseRepositoryInterface      $courseRepository,
         MidtransServiceInterface       $midtransService
-    )
-    {
+    ) {
         $this->repository = $repository;
         $this->pricingRepository = $pricingRepository;
         $this->courseRepository = $courseRepository;
@@ -130,6 +130,7 @@ class TransactionService implements TransactionServiceInterface
 
         $newTrxCode = $this->repository->generateSequentialTransactionCode();
         $bookingTrxId = (string)Str::uuid();
+        $snapExpiryTime = Carbon::now()->addMinutes(10); // Calculate expiry time
 
         $transaction = $this->repository->createTransaction([
             'user_id' => $user->id,
@@ -143,6 +144,7 @@ class TransactionService implements TransactionServiceInterface
             'transaction_code' => $newTrxCode,
             'is_paid' => false,
             'booking_trx_id' => $bookingTrxId,
+            'snap_expiry' => $snapExpiryTime, // Save snap expiry time
         ]);
 
         $userName = trim($user->name) ?: 'Customer';
@@ -176,6 +178,12 @@ class TransactionService implements TransactionServiceInterface
                     'name' => 'Pajak 12%',
                 ]
             ],
+            'expiry' => [
+                'start_time' => date('Y-m-d H:i:s O'),
+                'duration' => 10,
+                'unit' => 'minutes'
+            ]
+
         ];
 
         $snapToken = $this->midtransService->getSnapToken($params);

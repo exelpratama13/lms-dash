@@ -18,6 +18,7 @@ class Sertificate extends Model
         'course_batch_id',
         'course_progress_id',
         'sertificate_url', // Added
+        'recipient_name',
     ];
 
     protected $appends = [

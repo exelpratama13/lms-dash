@@ -181,15 +181,17 @@ class TransactionResource extends Resource
                 Tables\Actions\Action::make('view_proof')
                     ->label('View Proof')
                     ->icon('heroicon-o-document-text')
-                    ->url(fn (Transaction $record): ?string => $record->proof_url)
+                    ->url(fn(Transaction $record): ?string => $record->proof_url)
                     ->openUrlInNewTab()
-                    ->visible(fn (Transaction $record): bool => !empty($record->proof)),
+                    ->visible(fn(Transaction $record): bool => !empty($record->proof)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->paginationPageOptions([5, 10, 25, 50, 100])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array

@@ -37,6 +37,8 @@ class User extends Authenticatable implements FilamentUser, JWTSubject
         'password',
         'photo',
         'is_active',
+        'google_id',
+        'google_token',
         'refresh_token',
         'refresh_token_expires_at',
     ];
@@ -118,5 +120,10 @@ class User extends Authenticatable implements FilamentUser, JWTSubject
         }
 
         return url('storage/' . ltrim($photo, '/'));
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->photo_url;
     }
 }

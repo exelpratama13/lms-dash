@@ -41,7 +41,7 @@ class RoleResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    // ->searchable()
+                // ->searchable()
             ])
             ->filters([
                 //
@@ -52,9 +52,10 @@ class RoleResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->paginationPageOptions([5, 10, 25, 50, 100]);
     }
 
     public static function getRelations(): array

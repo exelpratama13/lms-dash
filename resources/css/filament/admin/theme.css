@@ -1,0 +1,8 @@
+/* Move the "Add" button to the top of the repeater */
+.fi-fo-repeater-builder > .fi-fo-repeater-builder-items {
+    order: 2;
+}
+
+.fi-fo-repeater-builder > .flex {
+    order: 1;
+}

@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class QuizAttemptResource extends Resource
 {
@@ -17,6 +18,31 @@ class QuizAttemptResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
     protected static ?string $navigationGroup = 'Quizzes';
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasAnyRole(['admin', 'mentor']);
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->hasAnyRole(['admin', 'mentor']);
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->hasAnyRole(['admin', 'mentor']);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->hasAnyRole(['admin', 'mentor']);
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()->hasAnyRole(['admin', 'mentor']);
+    }
 
 
     public static function form(Form $form): Form
@@ -69,15 +95,17 @@ class QuizAttemptResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('quiz_id')->relationship('quiz', 'title'),
-
+                Tables\Filters\SelectFilter::make('user_id')->relationship('user', 'name'),
             ])
+            ->filtersFormColumns(2)
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ])
+->paginationPageOptions([5, 10, 25, 50, 100]);
     }
 
     public static function getRelations(): array
@@ -96,3 +124,4 @@ class QuizAttemptResource extends Resource
         ];
     }
 }
+

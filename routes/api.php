@@ -12,10 +12,16 @@ use App\Http\Controllers\Api\PricingController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\StatsController;
 use App\Http\Controllers\Api\QuizAttemptController;
+use App\Http\Controllers\Api\SocialiteController; // <-- Tambahkan baris ini
 
 // Auth
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+// Google Socialite
+Route::get('/auth/google/redirect', [SocialiteController::class, 'redirectToGoogle']);
+Route::get('/auth/google/callback', [SocialiteController::class, 'handleGoogleCallback']);
+
 Route::post('/refresh', [AuthController::class, 'refresh']);
 Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -35,7 +41,9 @@ Route::group(['middleware' => 'auth:api'], function () {
     // My Certificates
     Route::get('/my-certificates', [CertificateController::class, 'myCertificates']);
     Route::post('/certificates', [CertificateController::class, 'store'])->middleware('auth:api');
-    
+    // Regenerate certificate PDF for an existing certificate (owner only)
+    Route::post('/certificates/{certificate}/regenerate', [CertificateController::class, 'regenerate'])->middleware('auth:api');
+
     // Show single transaction
     Route::get('/transactions/{bookingTrxId}', [TransactionController::class, 'show']);
 });

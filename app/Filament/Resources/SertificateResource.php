@@ -11,6 +11,8 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Services\CertificateGeneratorService;
+use Filament\Notifications\Notification;
 
 class SertificateResource extends Resource
 {
@@ -42,6 +44,11 @@ class SertificateResource extends Resource
                     ->required()
                     ->maxLength(255),
 
+                Forms\Components\TextInput::make('recipient_name')
+                    ->label('Recipient Name')
+                    ->maxLength(255)
+                    ->helperText('Name as it appears on the certificate. If empty, will use user name.'),
+
                 Forms\Components\Select::make('course_id')
                     ->label('Course')
                     ->relationship('course', 'name')
@@ -65,9 +72,10 @@ class SertificateResource extends Resource
 
                 Forms\Components\ViewField::make('certificate_preview')
                     ->view('filament.sertificates.components.certificate-viewer')
-                    ->visible(fn ($record) => $record && $record->sertificate_url),
+                    ->visible(fn($record) => $record && $record->sertificate_url),
             ]);
     }
+
 
     public static function table(Table $table): Table
     {
@@ -75,6 +83,11 @@ class SertificateResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('User')
+                    ->sortable()
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('recipient_name')
+                    ->label('Recipient Name (on Certificate)')
                     ->sortable()
                     ->searchable(),
 
@@ -105,17 +118,51 @@ class SertificateResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('regenerate')
+                    ->label('Regenerate')
+                    ->icon('heroicon-o-arrow-path')
+                    ->requiresConfirmation()
+                    ->color('warning')
+                    ->action(function (Sertificate $record) {
+                        try {
+                            $generator = app(CertificateGeneratorService::class);
+                            $file = $generator->generatePdf($record);
+
+                            if (!$file) {
+                                Notification::make()
+                                    ->title('Regeneration failed')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+
+                            $record->refresh();
+
+                            Notification::make()
+                                ->title('Certificate regenerated')
+                                ->success()
+                                ->body('The PDF has been regenerated and stored.')
+                                ->send();
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Error')
+                                ->danger()
+                                ->body($e->getMessage())
+                                ->send();
+                        }
+                    }),
                 Tables\Actions\Action::make('downloadCertificate')
                     ->label('Download Certificate')
                     ->icon('heroicon-o-document-arrow-down')
-                    ->url(fn (Sertificate $record): ?string => $record->sertificate_url ? url($record->sertificate_url) : null)
+                    ->url(fn(Sertificate $record): ?string => $record->sertificate_url ? url($record->sertificate_url) : null)
                     ->openUrlInNewTab()
-                    ->hidden(fn (Sertificate $record): bool => !$record->sertificate_url),
+                    ->hidden(fn(Sertificate $record): bool => !$record->sertificate_url),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ])
+->paginationPageOptions([5, 10, 25, 50, 100]);
     }
 
     public static function getRelations(): array
@@ -132,3 +179,4 @@ class SertificateResource extends Resource
         ];
     }
 }
+

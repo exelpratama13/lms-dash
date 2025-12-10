@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\DB;
 use Midtrans\Notification;
 use Exception;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TransactionReceiptMail;
 
 class MidtransWebhookService implements MidtransWebhookServiceInterface
 {
@@ -46,16 +51,45 @@ class MidtransWebhookService implements MidtransWebhookServiceInterface
                 'is_paid' => $isPaid,
             ]);
 
-            // If payment is successful, handle student enrollment or update
+            // If payment is successful, generate receipt and update transaction BEFORE student enrollment
             if ($isPaid) {
-                // Case 1: The new purchase is for a BATCH.
+                // Generate receipt PDF and update transaction proof
+                try {
+                    $transaction = $transaction->refresh();
+                    if (empty($transaction->proof)) {
+                        $pdf = PDF::loadView('receipts.transaction', ['transaction' => $transaction]);
+                        $fileName = 'receipts/' . $transaction->booking_trx_id . '.pdf';
+                        Storage::disk('public')->put($fileName, $pdf->output());
+                        $proofUrl = Storage::disk('public')->url($fileName);
+                        $this->repository->updateTransaction($transaction, [
+                            'proof' => $proofUrl,
+                        ]);
+                        // Send receipt email synchronously (idempotent - wrap in try/catch)
+                        try {
+                            $localPath = Storage::disk('public')->path($fileName);
+                            if ($transaction->user && $transaction->user->email) {
+                                Mail::to($transaction->user->email)
+                                    ->send(new TransactionReceiptMail($transaction, $localPath));
+                            } else {
+                                Log::warning('Transaction has no user email to send receipt', ['transaction_id' => $transaction->id]);
+                            }
+                        } catch (Exception $e) {
+                            Log::error('Sending receipt email failed for transaction ' . ($transaction->id ?? 'unknown') . ': ' . $e->getMessage(), [
+                                'exception' => $e,
+                            ]);
+                        }
+                    }
+                } catch (Exception $e) {
+                    Log::error('Receipt generation failed for transaction ' . ($transaction->id ?? 'unknown') . ': ' . $e->getMessage(), [
+                        'exception' => $e,
+                    ]);
+                }
+
+                // Now handle student enrollment or update
                 if ($transaction->course_batch_id) {
-                    // Check if the user is already enrolled in this specific batch to prevent duplicates.
                     $isAlreadyInThisBatch = CourseStudent::where('user_id', $transaction->user_id)
                         ->where('course_batch_id', $transaction->course_batch_id)
                         ->exists();
-
-                    // If not already in this specific batch, create a new enrollment record for it.
                     if (!$isAlreadyInThisBatch) {
                         $batch = $transaction->courseBatch;
                         $accessExpiresAt = null;
@@ -77,39 +111,26 @@ class MidtransWebhookService implements MidtransWebhookServiceInterface
                             'is_active' => true,
                         ]);
                     }
-                    // If user is already in this batch, do nothing.
-
-                // Case 2: The new purchase is ON-DEMAND.
                 } else {
-                    // Look for an existing on-demand enrollment for this course.
                     $existingOnDemandEnrollment = CourseStudent::where('user_id', $transaction->user_id)
                         ->where('course_id', $transaction->course_id)
                         ->where('enrollment_type', 'on_demand')
                         ->first();
-
                     $pricing = $transaction->pricing;
-
-                    // If an on-demand enrollment already exists, update (extend) it.
                     if ($existingOnDemandEnrollment && $pricing && $pricing->duration) {
-                        // Extend from today or from the future expiry date, whichever is later.
                         $newExpiryDate = (now()->isAfter($existingOnDemandEnrollment->access_expires_at))
                             ? now()->addDays($pricing->duration)
                             : Carbon::parse($existingOnDemandEnrollment->access_expires_at)->addDays($pricing->duration);
-
                         $existingOnDemandEnrollment->update([
                             'pricing_id' => $transaction->pricing_id,
                             'access_expires_at' => $newExpiryDate,
-                            'is_active' => true, // Ensure it's active
+                            'is_active' => true,
                         ]);
-
-                    // If no on-demand enrollment exists, create a new one.
                     } else {
                         $accessExpiresAt = null;
                         if ($pricing && $pricing->duration) {
                             $accessExpiresAt = now()->addDays($pricing->duration);
                         }
-        
-                        // Create course student record
                         $this->transactionRepository->createCourseStudent([
                             'user_id' => $transaction->user_id,
                             'course_id' => $transaction->course_id,
@@ -125,9 +146,14 @@ class MidtransWebhookService implements MidtransWebhookServiceInterface
             }
 
             DB::commit();
+
             return ['status' => 200, 'message' => 'Notification handled successfully'];
         } catch (Exception $e) {
             DB::rollBack();
+            // Log the exception with stack trace for debugging
+            Log::error('Midtrans webhook processing failed: ' . $e->getMessage(), [
+                'exception' => $e,
+            ]);
             return ['status' => 500, 'message' => 'Failed to handle notification: ' . $e->getMessage()];
         }
     }

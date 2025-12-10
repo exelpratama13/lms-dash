@@ -8,6 +8,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Interfaces\CertificateServiceInterface;
 use App\Http\Requests\StoreCertificateRequest;
+use App\Models\Sertificate;
+use App\Services\CertificateGeneratorService;
+use Illuminate\Support\Facades\Storage;
 
 class CertificateController extends Controller
 {
@@ -72,6 +75,43 @@ class CertificateController extends Controller
                 'status' => 'error',
                 'message' => 'Failed to retrieve my certificates: ' . $e->getMessage(),
             ], 500);
+        }
+    }
+
+    /**
+     * Regenerate the certificate PDF based on existing certificate data.
+     */
+    public function regenerate(Sertificate $certificate, CertificateGeneratorService $generator): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            if (!$userId) {
+                return response()->json(['status' => 'error', 'message' => 'User not authenticated.'], 401);
+            }
+
+            // Only allow owner to regenerate (adjust as needed for admin roles)
+            if ($certificate->user_id !== $userId) {
+                return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
+            }
+
+            $file = $generator->generatePdf($certificate);
+
+            if (!$file) {
+                return response()->json(['status' => 'error', 'message' => 'Failed to generate certificate PDF'], 500);
+            }
+
+            // Refresh to get updated URL accessor
+            $certificate->refresh();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Certificate regenerated',
+                'data' => [
+                    'sertificate_url' => $certificate->sertificate_url,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Error regenerating certificate: ' . $e->getMessage()], 500);
         }
     }
 }

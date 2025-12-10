@@ -150,67 +150,75 @@ class CourseService implements CourseServiceInterface
             return null;
         }
 
-        $courseData = $course->toArray();
+        // The 'auth:api' middleware handles unauthenticated users, so we can assume $userId is present.
         $userId = auth('api')->id();
 
-        if ($userId) {
-            $enrollments = \App\Models\CourseStudent::where('user_id', $userId)
-                ->where('course_id', $course->id)
-                ->with('batch') // Eager load relasi batch
-                ->get();
+        $enrollments = \App\Models\CourseStudent::where('user_id', $userId)
+            ->where('course_id', $course->id)
+            ->with('batch') // Eager load relasi batch
+            ->get();
 
-            $bestEnrollment = null;
-
-            foreach ($enrollments as $enrollment) {
-                try {
-                    // Ambil nilai mentah untuk menghindari error casting otomatis
-                    $rawAccessExpiresAt = $enrollment->getRawOriginal('access_expires_at');
-                    $rawBatchStartDate = $enrollment->batch ? $enrollment->batch->getRawOriginal('start_date') : null;
-
-                    // --- Check 1: Is access active? ---
-                    $isAccessActive = false;
-                    if ($rawAccessExpiresAt === null) {
-                        $isAccessActive = true; // Permanent access
-                    } elseif ($rawAccessExpiresAt) {
-                        if (\Carbon\Carbon::parse($rawAccessExpiresAt)->isFuture()) {
-                            $isAccessActive = true;
-                        }
-                    }
-
-                    if (!$isAccessActive) {
-                        continue; // Skip to next enrollment if access is not active
-                    }
-
-                    // --- Check 2: Is batch running? (only if access is active) ---
-                    $isBatchRunning = false;
-                    if (!$enrollment->batch) { // On-demand is considered running
-                        $isBatchRunning = true;
-                    } elseif ($rawBatchStartDate) { // If batch exists and start date exists
-                        if (!\Carbon\Carbon::parse($rawBatchStartDate)->isFuture()) { // Batch has started or is today
-                            $isBatchRunning = true;
-                        }
-                    }
-
-                    if ($isBatchRunning) {
-                        $bestEnrollment = $enrollment;
-                        break; // Found the best option, stop.
-                    }
-
-                } catch (\Exception $e) {
-                    // Log error if date parsing fails, but don't crash.
-                    \Illuminate\Support\Facades\Log::error('Error parsing date in getCourseMateri', [
-                        'enrollment_id' => $enrollment->id,
-                        'access_expires_at' => $enrollment->access_expires_at, // Use original for logging
-                        'batch_start_date' => $enrollment->batch ? $enrollment->batch->start_date : 'N/A', // Use original for logging
-                        'error' => $e->getMessage()
-                    ]);
-                    continue; // Skip this potentially corrupted enrollment
-                }
-            }
-            
-            $courseData['active_batch_id'] = $bestEnrollment ? $bestEnrollment->course_batch_id : null;
+        // If the user has no enrollment records for this course at all, deny access.
+        if ($enrollments->isEmpty()) {
+            abort(403, 'You are not enrolled in this course.');
         }
 
+        $bestEnrollment = null;
+
+        foreach ($enrollments as $enrollment) {
+            try {
+                // Ambil nilai mentah untuk menghindari error casting otomatis
+                $rawAccessExpiresAt = $enrollment->getRawOriginal('access_expires_at');
+                $rawBatchStartDate = $enrollment->batch ? $enrollment->batch->getRawOriginal('start_date') : null;
+
+                // --- Check 1: Is access active? ---
+                $isAccessActive = false;
+                if ($rawAccessExpiresAt === null) {
+                    $isAccessActive = true; // Permanent access
+                } elseif ($rawAccessExpiresAt) {
+                    if (\Carbon\Carbon::parse($rawAccessExpiresAt)->isFuture()) {
+                        $isAccessActive = true;
+                    }
+                }
+
+                if (!$isAccessActive) {
+                    continue; // Skip to next enrollment if access is not active
+                }
+
+                // --- Check 2: Is batch running? (only if access is active) ---
+                $isBatchRunning = false;
+                if (!$enrollment->batch) { // On-demand is considered running
+                    $isBatchRunning = true;
+                } elseif ($rawBatchStartDate) { // If batch exists and start date exists
+                    if (!\Carbon\Carbon::parse($rawBatchStartDate)->isFuture()) { // Batch has started or is today
+                        $isBatchRunning = true;
+                    }
+                }
+
+                if ($isBatchRunning) {
+                    $bestEnrollment = $enrollment;
+                    break; // Found the best option, stop.
+                }
+
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Error parsing date in getCourseMateri', [
+                    'enrollment_id' => $enrollment->id,
+                    'access_expires_at' => $enrollment->access_expires_at,
+                    'batch_start_date' => $enrollment->batch ? $enrollment->batch->start_date : 'N/A',
+                    'error' => $e->getMessage()
+                ]);
+                continue;
+            }
+        }
+
+        // If, after checking all enrollments, none were valid/active, deny access.
+        if (!$bestEnrollment) {
+            abort(403, 'Your access to this course is not currently active.');
+        }
+
+        $courseData = $course->toArray();
+        $courseData['active_batch_id'] = $bestEnrollment->course_batch_id;
+        
         return $courseData;
     }
 

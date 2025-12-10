@@ -22,6 +22,14 @@ class CertificateRepository implements CertificateRepositoryInterface
         // Generate a unique certificate code
         $data['code'] = 'CERT-' . strtoupper(Str::random(10));
 
+        // If recipient_name not provided, snapshot user's current name
+        if (empty($data['recipient_name']) && !empty($data['user_id'])) {
+            $user = \App\Models\User::find($data['user_id']);
+            if ($user) {
+                $data['recipient_name'] = $user->name;
+            }
+        }
+
         // Create the certificate record
         return Sertificate::create($data);
     }

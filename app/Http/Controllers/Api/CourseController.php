@@ -217,6 +217,11 @@ class CourseController extends Controller
                 'message' => 'Course materi retrieved successfully',
                 'data' => $course,
             ], 200);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], $e->getStatusCode());
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',

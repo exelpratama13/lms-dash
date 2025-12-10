@@ -74,7 +74,8 @@ class CategoryResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->paginationPageOptions([5, 10, 25, 50, 100]);
     }
 
     public static function getRelations(): array
@@ -101,3 +102,4 @@ class CategoryResource extends Resource
             ]);
     }
 }
+

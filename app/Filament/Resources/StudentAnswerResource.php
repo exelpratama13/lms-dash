@@ -99,7 +99,8 @@ class StudentAnswerResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ])
+->paginationPageOptions([5, 10, 25, 50, 100]);
     }
 
     public static function getRelations(): array
@@ -116,3 +117,4 @@ class StudentAnswerResource extends Resource
         ];
     }
 }
+

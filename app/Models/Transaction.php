@@ -28,11 +28,13 @@ class Transaction extends Model
         'payment_type',
         'proof',
         'midtrans_snap_token',
+        'snap_expiry',
         'transaction_code',
     ];
 
     protected $casts = [
         'is_paid' => 'boolean',
+        'snap_expiry' => 'datetime',
     ];
 
     protected $appends = [

@@ -17,7 +17,9 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Filament\Navigation\NavigationGroup;
+use Filament\Support\Assets\Css;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Models\User;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -31,6 +33,9 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->assets([
+                Css::make('custom-stylesheet', resource_path('css/filament/admin/theme.css')),
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -40,6 +45,14 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+                \App\Filament\Widgets\CourseStatsOverviewWidget::class,
+                \App\Filament\Widgets\MostPopularCourseChart::class,
+                \App\Filament\Widgets\ActiveStudentsChart::class,
+                \App\Filament\Widgets\StudentEnrollmentTrendChart::class,
+                \App\Filament\Widgets\CourseCompletionRateChart::class,
+                \App\Filament\Widgets\TopPerformingStudentsTable::class,
+                \App\Filament\Widgets\StudentProgressPerCourseTable::class,
+                \App\Filament\Widgets\CourseContentAccessTable::class,
             ])
             ->middleware([
                 EncryptCookies::class,
