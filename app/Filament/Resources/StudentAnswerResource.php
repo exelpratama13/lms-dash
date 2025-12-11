@@ -12,11 +12,9 @@ use Filament\Tables\Table;
 
 class StudentAnswerResource extends Resource
 {
-    protected static ?string $model = StudentAnswer::class;
+        protected static ?string $model = StudentAnswer::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-pencil-square';
-
-    protected static ?string $navigationGroup = 'Quizzes';
+    protected static ?string $navigationGroup = 'Kuis & Penilaian';
 
 
     public static function form(Form $form): Form

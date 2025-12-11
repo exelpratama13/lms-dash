@@ -12,10 +12,8 @@ use Filament\Tables\Table;
 
 class CoursePricingResource extends Resource
 {
-    protected static ?string $model = CoursePricing::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-document-currency-dollar';
-    protected static ?string $navigationGroup = 'Payment';
+        protected static ?string $model = CoursePricing::class;
+    protected static ?string $navigationGroup = 'Transaksi & Keuangan';
 
     public static function canViewAny(): bool
     {

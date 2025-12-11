@@ -13,11 +13,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class QuizAttemptResource extends Resource
 {
-    protected static ?string $model = QuizAttempt::class;
+        protected static ?string $model = QuizAttempt::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
-
-    protected static ?string $navigationGroup = 'Quizzes';
+    protected static ?string $navigationGroup = 'Kuis & Penilaian';
 
     public static function canViewAny(): bool
     {

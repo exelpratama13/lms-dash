@@ -21,9 +21,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CourseBatchResource extends Resource
 {
-    protected static ?string $model = CourseBatch::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+        protected static ?string $model = CourseBatch::class;
+        protected static ?string $navigationGroup = 'Manajemen Kursus';
 
     public static function canViewAny(): bool
     {

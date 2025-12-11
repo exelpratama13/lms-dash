@@ -31,10 +31,22 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(\App\Filament\Pages\Auth\CustomLogin::class)
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,
             ])
             ->assets([
                 Css::make('custom-stylesheet', resource_path('css/filament/admin/theme.css')),
+            ])
+            ->navigationGroups([
+                NavigationGroup::make('Manajemen Kursus')
+                    ->icon('heroicon-o-book-open'),
+                NavigationGroup::make('Manajemen Pengguna')
+                    ->icon('heroicon-o-users'),
+                NavigationGroup::make('Transaksi & Keuangan')
+                    ->icon('heroicon-o-banknotes'),
+                NavigationGroup::make('Sertifikat & Kemajuan')
+                    ->icon('heroicon-o-trophy'),
+                NavigationGroup::make('Kuis & Penilaian')
+                    ->icon('heroicon-o-clipboard-document-list'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -43,7 +55,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                \App\Filament\Widgets\CustomAccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
                 \App\Filament\Widgets\CourseStatsOverviewWidget::class,
                 \App\Filament\Widgets\MostPopularCourseChart::class,

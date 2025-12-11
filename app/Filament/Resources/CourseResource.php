@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Storage;
 class CourseResource extends Resource
 {
     protected static ?string $model = Course::class;
-    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+    protected static ?string $navigationGroup = 'Manajemen Kursus';
 
     public static function getEloquentQuery(): Builder
     {

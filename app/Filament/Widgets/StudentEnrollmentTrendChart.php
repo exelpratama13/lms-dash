@@ -12,6 +12,7 @@ class StudentEnrollmentTrendChart extends ChartWidget
     protected static ?string $heading = 'Tren Pendaftaran Siswa Anda';
     protected static ?string $maxHeight = '300px';
     protected static ?int $sort = 5;
+    protected int | string | array $columnSpan = '1/2';
 
     protected function getType(): string
     {

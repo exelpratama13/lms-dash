@@ -21,11 +21,9 @@ use App\Models\Course;
 
 class CourseMentorResource extends Resource
 {
-    protected static ?string $model = CourseMentor::class;
+        protected static ?string $model = CourseMentor::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user';
-
-    protected static ?string $navigationGroup = 'Users';
+    protected static ?string $navigationGroup = 'Manajemen Pengguna';
 
     public static function canViewAny(): bool
     {

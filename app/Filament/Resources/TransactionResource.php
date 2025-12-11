@@ -25,11 +25,9 @@ use Filament\Tables\Columns\ImageColumn;
 
 class TransactionResource extends Resource
 {
-    protected static ?string $model = Transaction::class;
+        protected static ?string $model = Transaction::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
-
-    protected static ?string $navigationGroup = 'Payment';
+    protected static ?string $navigationGroup = 'Transaksi & Keuangan';
 
     public static function canViewAny(): bool
     {

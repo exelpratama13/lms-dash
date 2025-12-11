@@ -19,11 +19,9 @@ use App\Models\Course;
 
 class CourseStudentResource extends Resource
 {
-    protected static ?string $model = CourseStudent::class;
+        protected static ?string $model = CourseStudent::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
-
-    protected static ?string $navigationGroup = 'Users';
+    protected static ?string $navigationGroup = 'Manajemen Pengguna';
 
     public static function canViewAny(): bool
     {

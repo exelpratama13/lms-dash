@@ -15,11 +15,9 @@ use Filament\Tables\Columns\BadgeColumn;
 
 class UserResource extends Resource
 {
-    protected static ?string $model = User::class;
+        protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
-
-    protected static ?string $navigationGroup = 'Users';
+    protected static ?string $navigationGroup = 'Manajemen Pengguna';
 
     public static function canViewAny(): bool
     {

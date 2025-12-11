@@ -15,11 +15,9 @@ use Spatie\Permission\Models\Role;
 
 class RoleResource extends Resource
 {
-    protected static ?string $model = Role::class;
+        protected static ?string $model = Role::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-identification';
-
-    protected static ?string $navigationGroup = 'Users';
+    protected static ?string $navigationGroup = 'Manajemen Pengguna';
 
     public static function canViewAny(): bool
     {

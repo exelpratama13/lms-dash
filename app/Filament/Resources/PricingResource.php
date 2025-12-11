@@ -13,11 +13,9 @@ use Filament\Tables\Table;
 
 class PricingResource extends Resource
 {
-    protected static ?string $model = Pricing::class;
+        protected static ?string $model = Pricing::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-credit-card';
-
-    protected static ?string $navigationGroup = 'Payment';
+    protected static ?string $navigationGroup = 'Transaksi & Keuangan';
 
     protected static ?string $recordTitleAttribute = 'name';
 

@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 class CertificateGeneratorService
 {
-    public function generatePdf(Sertificate $certificate): ?string
+    public function generatePdf(Sertificate $certificate, ?string $newRecipientName = null): ?string
     {
         // Ensure relationships are loaded
         $certificate->load(['user', 'course', 'courseBatch', 'courseProgress']);
@@ -19,10 +19,14 @@ class CertificateGeneratorService
             return null;
         }
 
+        // Determine the recipient name. Prioritize the new name, then existing, then user's name.
+        $recipientName = $newRecipientName ?? $certificate->recipient_name ?? $certificate->user->name;
+
         // Prepare data for the Blade view
         $data = [
             'certificate' => $certificate,
             'user' => $certificate->user,
+            'recipientName' => $recipientName, // Pass the determined name to the view
             'course' => $certificate->course,
             'completion_date' => $certificate->created_at ? Carbon::parse($certificate->created_at)->format('F d, Y') : Carbon::now()->format('F d, Y'),
             // You might need to fetch mentor data if it's not directly on the course or certificate

@@ -11,7 +11,8 @@ class CourseCompletionRateChart extends ChartWidget
 {
     protected static ?string $heading = 'Perbandingan Tingkat Penyelesaian Kursus Anda';
     protected static ?string $maxHeight = '300px';
-    protected static ?int $sort = 9;
+    protected static ?int $sort = 6;
+    protected int | string | array $columnSpan = '1/2';
 
     protected function getType(): string
     {

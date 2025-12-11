@@ -12,10 +12,8 @@ use Filament\Tables\Table;
 
 class QuizResource extends Resource
 {
-    protected static ?string $model = Quiz::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
-    protected static ?string $navigationGroup = 'Quizzes';
+        protected static ?string $model = Quiz::class;
+    protected static ?string $navigationGroup = 'Kuis & Penilaian';
 
     public static function canViewAny(): bool
     {

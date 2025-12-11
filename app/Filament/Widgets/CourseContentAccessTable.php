@@ -11,7 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 
 class CourseContentAccessTable extends BaseWidget
 {
-    protected static ?string $heading = 'Konten Kursus Paling Sering Diakses';
+    protected static ?string $heading = 'Konten Paling Banyak Diselesaikan Siswa';
     protected static ?int $sort = 8;
     protected int | string | array $columnSpan = 'full';
 
@@ -25,7 +25,7 @@ class CourseContentAccessTable extends BaseWidget
                 TextColumn::make('courseSection.course.name')
                     ->label('Nama Kursus'),
                 TextColumn::make('access_count')
-                    ->label('Jumlah Diakses')
+                    ->label('Jumlah Penyelesaian')
                     ->sortable()
                     ->formatStateUsing(fn (mixed $state) => number_format($state)),
             ])

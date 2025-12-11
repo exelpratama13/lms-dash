@@ -16,10 +16,8 @@ use Filament\Notifications\Notification;
 
 class SertificateResource extends Resource
 {
-    protected static ?string $model = Sertificate::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
-    // protected static ?string $navigationGroup = 'Courses';
+        protected static ?string $model = Sertificate::class;
+    protected static ?string $navigationGroup = 'Sertifikat & Kemajuan';
 
     public static function canViewAny(): bool
     {
@@ -121,12 +119,19 @@ class SertificateResource extends Resource
                 Tables\Actions\Action::make('regenerate')
                     ->label('Regenerate')
                     ->icon('heroicon-o-arrow-path')
-                    ->requiresConfirmation()
                     ->color('warning')
-                    ->action(function (Sertificate $record) {
+                    ->form([
+                        Forms\Components\TextInput::make('recipient_name')
+                            ->label('New Recipient Name')
+                            ->default(fn (Sertificate $record) => $record->recipient_name ?? $record->user->name), // Removed ->required()
+                    ])
+                    ->action(function (Sertificate $record, array $data) {
                         try {
                             $generator = app(CertificateGeneratorService::class);
-                            $file = $generator->generatePdf($record);
+                            // Pass the new name to the generator service.
+                            // If $data['recipient_name'] is empty, it will be passed as an empty string,
+                            // which CertificateGeneratorService will correctly fallback from.
+                            $file = $generator->generatePdf($record, $data['recipient_name']);
 
                             if (!$file) {
                                 Notification::make()
@@ -136,12 +141,18 @@ class SertificateResource extends Resource
                                 return;
                             }
 
+                            // Update the recipient name on the certificate record itself ONLY if a new name was provided
+                            // or if the provided name is different from the current one.
+                            if (!empty($data['recipient_name']) && $record->recipient_name !== $data['recipient_name']) {
+                                $record->recipient_name = $data['recipient_name'];
+                                $record->save();
+                            }
                             $record->refresh();
 
                             Notification::make()
                                 ->title('Certificate regenerated')
                                 ->success()
-                                ->body('The PDF has been regenerated and stored.')
+                                ->body('The PDF has been regenerated with the new name.')
                                 ->send();
                         } catch (\Exception $e) {
                             Notification::make()

@@ -12,9 +12,8 @@ use Filament\Tables\Table;
 
 class CourseAttachmentResource extends Resource
 {
-    protected static ?string $model = CourseAttachment::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-paper-clip';
+        protected static ?string $model = CourseAttachment::class;
+        protected static ?string $navigationGroup = 'Manajemen Kursus';
 
     public static function canViewAny(): bool
     {

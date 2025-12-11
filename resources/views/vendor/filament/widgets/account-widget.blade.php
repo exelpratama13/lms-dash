@@ -1,0 +1,34 @@
+@php
+    $user = filament()->auth()->user();
+@endphp
+
+<x-filament-widgets::widget class="fi-account-widget">
+    <x-filament::section>
+        <div class="flex items-center gap-x-3">
+            <x-filament-panels::avatar.user size="lg" :user="$user" />
+
+            <div class="flex-1">
+                <img src="{{ asset('storage/' . $user->photo) }}" alt="User Photo" class="w-10 h-10 rounded-full">
+            </div>
+
+            <form
+                action="{{ filament()->getLogoutUrl() }}"
+                method="post"
+                class="my-auto"
+            >
+                @csrf
+
+                <x-filament::button
+                    color="gray"
+                    icon="heroicon-m-arrow-left-on-rectangle"
+                    icon-alias="panels::widgets.account.logout-button"
+                    labeled-from="sm"
+                    tag="button"
+                    type="submit"
+                >
+                    {{ __('filament-panels::widgets/account-widget.actions.logout.label') }}
+                </x-filament::button>
+            </form>
+        </div>
+    </x-filament::section>
+</x-filament-widgets::widget>

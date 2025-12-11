@@ -15,9 +15,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CourseVideoResource extends Resource
 {
-    protected static ?string $model = CourseVideo::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-play-circle';
+        protected static ?string $model = CourseVideo::class;
+        protected static ?string $navigationGroup = 'Manajemen Kursus';
 
     public static function canViewAny(): bool
     {

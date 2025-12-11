@@ -12,9 +12,8 @@ use Filament\Tables\Table;
 
 class CourseBenefitResource extends Resource
 {
-    protected static ?string $model = CourseBenefit::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-sparkles';
+        protected static ?string $model = CourseBenefit::class;
+        protected static ?string $navigationGroup = 'Manajemen Kursus';
     // protected static ?string $navigationGroup = 'Courses';
 
     public static function canViewAny(): bool

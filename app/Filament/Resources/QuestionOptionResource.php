@@ -12,11 +12,9 @@ use Filament\Tables\Table;
 
 class QuestionOptionResource extends Resource
 {
-    protected static ?string $model = QuestionOption::class;
+        protected static ?string $model = QuestionOption::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-list-bullet';
-
-    protected static ?string $navigationGroup = 'Quizzes';
+    protected static ?string $navigationGroup = 'Kuis & Penilaian';
 
     public static function canViewAny(): bool
     {

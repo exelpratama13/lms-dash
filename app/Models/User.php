@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
@@ -107,23 +109,35 @@ class User extends Authenticatable implements FilamentUser, JWTSubject
         return $this->hasMany(CourseBatch::class, 'mentor_id');
     }
 
-    public function getPhotoUrlAttribute(): ?string
-    {
-        $photo = $this->attributes['photo'] ?? null;
-
-        if (empty($photo)) {
-            return null;
-        }
-
-        if (preg_match('#^https?://#i', $photo)) {
-            return $photo;
-        }
-
-        return url('storage/' . ltrim($photo, '/'));
-    }
-
     public function getFilamentAvatarUrl(): ?string
     {
-        return $this->photo_url;
+        Log::info('--- Avatar Check Start for user: ' . $this->email . ' ---');
+
+        $initialPhoto = $this->getRawOriginal('photo');
+        Log::info('1. Value from DB (raw): ' . ($initialPhoto ?? 'null'));
+
+        // If it's a full URL (like from Google), return it directly.
+        if (filter_var($initialPhoto, FILTER_VALIDATE_URL)) {
+            Log::info('2. Is a valid URL. Returning: ' . $initialPhoto);
+            Log::info('--- Avatar Check End ---');
+            return $initialPhoto;
+        }
+
+        Log::info('2. Not a valid URL. Checking local storage...');
+
+        // If it's a local path, check if the file exists and return its URL
+        if ($initialPhoto && Storage::disk('public')->exists($initialPhoto)) {
+            $url = Storage::disk('public')->url($initialPhoto);
+            Log::info('3. File exists in public storage. Returning URL: ' . $url);
+            Log::info('--- Avatar Check End ---');
+            return $url;
+        }
+        
+        Log::info('3. File does not exist in public storage or path is empty/null.');
+        $fallbackUrl = 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random';
+        Log::info('4. Returning fallback URL: ' . $fallbackUrl);
+        Log::info('--- Avatar Check End ---');
+
+        return $fallbackUrl;
     }
 }

@@ -9,39 +9,33 @@
             text-align: center;
             margin: 0;
             padding: 50px;
-            /* Added page margin */
             background-color: #f0f0f0;
         }
 
         .certificate-container {
-            /* Removed fixed width and height */
             max-width: 700px;
-            /* Set a max-width to prevent overflow */
             min-height: 500px;
-            /* Ensure a minimum height */
             margin: auto;
-            /* Center horizontally */
-            border: 10px solid #ffd700;
+            border: 10px solid #3b82f6; /* Changed to blue */
             padding: 40px;
-            /* Increased internal padding */
             box-sizing: border-box;
             background-color: #fff;
             position: relative;
-            background-image: url('{{ $background_image ?? '' }}');
-            /* Optional background image */
+            /* background-image is handled by .logo-background div */
             background-size: cover;
             background-position: center;
+            overflow: hidden; /* Ensure background doesn't overflow */
         }
 
         .certificate-header {
             font-size: 2em;
             margin-bottom: 20px;
-            color: #333;
+            color: #16a34a; /* Changed to green */
         }
 
         .certificate-title {
             font-size: 3em;
-            color: #0056b3;
+            color: #3b82f6; /* Changed to blue */
             margin-bottom: 30px;
             text-transform: uppercase;
         }
@@ -61,7 +55,7 @@
 
         .certificate-course {
             font-size: 1.8em;
-            color: #007bff;
+            color: #3b82f6; /* Changed to blue */
             margin-bottom: 40px;
             font-weight: bold;
         }
@@ -92,7 +86,7 @@
         }
 
         .signature-line {
-            border-top: 1px solid #000;
+            border-top: 1px solid #3b82f6; /* Changed to blue */
             width: 150px;
             margin: 10px auto 5px auto;
         }
@@ -110,35 +104,50 @@
 
 <body>
     <div class="certificate-container">
-        <div class="certificate-header">CERTIFICATE OF COMPLETION</div>
-        <div class="certificate-title">This Certifies That</div>
-        <div class="certificate-recipient">{{ $certificate->recipient_name ?? ($user->name ?? 'Nama Peserta') }}</div>
-        <div class="certificate-text">has successfully completed the course</div>
-        <div class="certificate-course">{{ $course->name ?? 'Nama Kursus' }}</div>
+        <div class="logo-background" style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('{{ public_path('images/logo.png') }}');
+            background-size: 80% auto; /* Adjust size as needed, 'auto' maintains aspect ratio */
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.1; /* Adjust transparency as needed */
+            z-index: 0;
+        "></div>
+        <div style="position: relative; z-index: 1;">
+            <div class="certificate-header">CERTIFICATE OF COMPLETION</div>
+            <div class="certificate-title">This Certifies That</div>
+            <div class="certificate-recipient">{{ $recipientName ?? 'Nama Peserta' }}</div>
+            <div class="certificate-text">has successfully completed the course</div>
+            <div class="certificate-course">{{ $course->name ?? 'Nama Kursus' }}</div>
 
-        @if (isset($certificate->courseBatch) && $certificate->courseBatch->name)
-            <div class="certificate-text" style="font-size: 1.2em; margin-top: -30px; margin-bottom: 30px;">
-                Batch: {{ $certificate->courseBatch->name }}
-            </div>
-        @endif
+            @if (isset($certificate->courseBatch) && $certificate->courseBatch->name)
+                <div class="certificate-text" style="font-size: 1.2em; margin-top: -30px; margin-bottom: 30px;">
+                    Batch: {{ $certificate->courseBatch->name }}
+                </div>
+            @endif
 
-        <div class="certificate-text">on</div>
-        <div class="certificate-date">{{ $completion_date ?? \Carbon\Carbon::now()->format('F d, Y') }}</div>
+            <div class="certificate-text">on</div>
+            <div class="certificate-date">{{ $completion_date ?? \Carbon\Carbon::now()->format('F d, Y') }}</div>
 
-        <div class="signature">
-            <div class="signature-block">
-                <div class="signature-line"></div>
-                <div class="signature-name">Admin Name</div>
-                <div class="signature-title">Administrator</div>
+            <div class="signature">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="signature-name">Admin Name</div>
+                    <div class="signature-title">Administrator</div>
+                </div>
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="signature-name">{{ $mentor->name ?? 'Nama Mentor' }}</div>
+                    <div class="signature-title">Course Instructor</div>
+                </div>
             </div>
-            <div class="signature-block">
-                <div class="signature-line"></div>
-                <div class="signature-name">{{ $mentor->name ?? 'Nama Mentor' }}</div>
-                <div class="signature-title">Course Instructor</div>
-            </div>
+
+            <div class="certificate-code">Certificate ID: {{ $certificate->code ?? 'N/A' }}</div>
         </div>
-
-        <div class="certificate-code">Certificate ID: {{ $certificate->code ?? 'N/A' }}</div>
     </div>
 </body>
 

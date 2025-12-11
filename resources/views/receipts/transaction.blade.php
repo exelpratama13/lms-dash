@@ -34,11 +34,26 @@
 </head>
 
 <body>
-    <div class="header">
-        <h2>Receipt Pembayaran</h2>
-        <div>Order ID: {{ $transaction->booking_trx_id }}</div>
-        <div>Tanggal: {{ $transaction->created_at->format('Y-m-d H:i') }}</div>
-    </div>
+<div class="logo-background" style="
+        position: fixed; /* Use fixed for full page background */
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('{{ public_path('images/logo.png') }}');
+        background-size: 50% auto; /* Adjust size as needed */
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0.05; /* Adjust transparency as needed */
+        z-index: -1; /* Place it behind content */
+    "></div>
+
+    <div style="position: relative; z-index: 0;">
+        <div class="header">
+            <h2>Receipt Pembayaran</h2>
+            <div>Order ID: {{ $transaction->booking_trx_id }}</div>
+            <div>Tanggal: {{ $transaction->created_at->format('Y-m-d H:i') }}</div>
+        </div>
 
     <div class="meta">
         <strong>Pelanggan:</strong> {{ $transaction->user->name }} ({{ $transaction->user->email }})<br>
