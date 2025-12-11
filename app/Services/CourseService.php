@@ -15,6 +15,7 @@ class CourseService implements CourseServiceInterface
 {
     protected $courseRepository;
 
+
     // Dependency Injection: Service membutuhkan Repository
     public function __construct(CourseRepositoryInterface $courseRepository)
     {
@@ -129,7 +130,7 @@ class CourseService implements CourseServiceInterface
             return [
                 'id' => $mentorUser->id,
                 'name' => $mentorUser->name,
-                'photo_url' => $mentorUser->photo_url,
+                'photo_url' => $mentorUser->getFilamentAvatarUrl(),
                 'job' => $courseMentor->job,
                 'about' => $courseMentor->about,
                 'classes_taught_count' => $mentorUser->classes_taught_count,

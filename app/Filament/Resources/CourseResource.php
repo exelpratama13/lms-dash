@@ -70,7 +70,7 @@ class CourseResource extends Resource
                                     ->required()
                                     ->maxLength(255)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(fn (callable $set, $state) => $set('slug', Str::slug($state))),
+                                    ->afterStateUpdated(fn(callable $set, $state) => $set('slug', Str::slug($state))),
                                 TextInput::make('slug')
                                     ->required()
                                     ->unique(Course::class, 'slug', ignoreRecord: true)
@@ -85,7 +85,7 @@ class CourseResource extends Resource
                                 Toggle::make('is_popular')
                                     ->label('Kursus Populer')
                                     ->default(false)
-                                    ->disabled(fn () => auth()->user()->hasRole('mentor')),
+                                    ->disabled(fn() => auth()->user()->hasRole('mentor')),
                             ])->columnSpan(1),
 
                         // Right Column
@@ -119,7 +119,7 @@ class CourseResource extends Resource
                             ])
                             ->minItems(1)
                             ->collapsible()
-                            ->itemLabel(fn (array $state) => $state['name'] ?? 'Manfaat Baru')
+                            ->itemLabel(fn(array $state) => $state['name'] ?? 'Manfaat Baru')
                             ->columnSpan('full'),
                         (function () {
                             $user = auth()->user();
@@ -135,7 +135,7 @@ class CourseResource extends Resource
                                             }
                                             return User::where('id', $user->id)->pluck('name', 'id');
                                         })
-                                        ->default(fn () => $user->hasRole('mentor') ? $user->id : null)
+                                        ->default(fn() => $user->hasRole('mentor') ? $user->id : null)
                                         ->disabled($user->hasRole('mentor'))
                                         ->required(),
                                     TextInput::make('job')->label('Jabatan'),
@@ -158,30 +158,32 @@ class CourseResource extends Resource
                 Step::make('Struktur Kursus & Kuis')
                     ->schema([
                         Repeater::make('sections')
-                            ->addAction(fn (Action $action) => $action
-                                ->label('Tambah Bagian Baru')
-                                ->icon('heroicon-o-plus-circle')
-                                ->color('success')
+                            ->addAction(
+                                fn(Action $action) => $action
+                                    ->label('Tambah Bagian Baru')
+                                    ->icon('heroicon-o-plus-circle')
+                                    ->color('success')
                             )
                             ->relationship()
                             ->orderable('position')
                             ->collapsible()
                             ->minItems(1)
-                            ->itemLabel(fn (array $state) => $state['name'] ?? 'Bagian Baru')
+                            ->itemLabel(fn(array $state) => $state['name'] ?? 'Bagian Baru')
                             ->extraAttributes(['class' => 'sections-repeater'])
                             ->schema([
                                 TextInput::make('name')->label('Nama Bagian')->required(),
                                 Repeater::make('contents')
-                                    ->addAction(fn (Action $action) => $action
-                                        ->label('Tambah Konten Baru')
-                                        ->icon('heroicon-o-plus')
-                                        ->color('info')
+                                    ->addAction(
+                                        fn(Action $action) => $action
+                                            ->label('Tambah Konten Baru')
+                                            ->icon('heroicon-o-plus')
+                                            ->color('info')
                                     )
                                     ->relationship()
                                     ->orderable('position')
                                     ->collapsible()
                                     ->minItems(1)
-                                    ->itemLabel(fn (array $state) => $state['name'] ?? 'Konten Baru')
+                                    ->itemLabel(fn(array $state) => $state['name'] ?? 'Konten Baru')
                                     ->extraAttributes(['class' => 'contents-repeater'])
                                     ->schema([
                                         TextInput::make('name')->label('Nama Konten')->required(),
@@ -237,7 +239,7 @@ class CourseResource extends Resource
                                                     ->label('File Lampiran')
                                                     ->directory('course-attachments')
                                                     ->disk('public')
-                                                    ->required(fn ($record) => !$record?->file)
+                                                    ->required(fn($record) => !$record?->file)
                                                     ->downloadable(),
                                             ])
                                             ->visible(fn(Forms\Get $get) => $get('has_attachment')),
@@ -258,7 +260,7 @@ class CourseResource extends Resource
                                                     ->addActionLabel('Tambah Pertanyaan')
                                                     ->collapsible()
                                                     ->minItems(1)
-                                                    ->itemLabel(fn (array $state) => $state['question_text'] ?? 'Pertanyaan Baru')
+                                                    ->itemLabel(fn(array $state) => $state['question_text'] ?? 'Pertanyaan Baru')
                                                     ->schema([
                                                         Textarea::make('question_text')->label('Teks Pertanyaan')->required(),
                                                         Repeater::make('options')
@@ -296,7 +298,7 @@ class CourseResource extends Resource
                             ->label('Harga')
                             ->options(Pricing::all()->pluck('name', 'id'))
                             ->required();
-                        
+
                         // Define the base select for on-demand
                         $pricingsSelect = Select::make('pricings')
                             ->label('Pilihan Harga (On Demand)')
@@ -341,7 +343,7 @@ class CourseResource extends Resource
                                             $mentorIds = array_column($mentorData, 'user_id');
                                             return User::whereIn('id', $mentorIds)->pluck('name', 'id');
                                         })
-                                        ->default(function(callable $get) {
+                                        ->default(function (callable $get) {
                                             $mentorData = $get('../../mentors');
                                             return $mentorData[0]['user_id'] ?? null;
                                         })
@@ -389,7 +391,7 @@ class CourseResource extends Resource
                         }
                         return $query;
                     })
-                    ->disabled(auth()->user()->hasRole('mentor')),
+                    ->visible(fn() => !auth()->user()->hasRole('mentor')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -399,7 +401,7 @@ class CourseResource extends Resource
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ])
-->paginationPageOptions([5, 10, 25, 50, 100]);
+            ->paginationPageOptions([5, 10, 25, 50, 100]);
     }
 
     public static function getRelations(): array
@@ -418,4 +420,3 @@ class CourseResource extends Resource
         ];
     }
 }
-

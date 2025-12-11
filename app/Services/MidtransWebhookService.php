@@ -33,13 +33,30 @@ class MidtransWebhookService implements MidtransWebhookServiceInterface
     {
         DB::beginTransaction();
         try {
+            Log::info('Processing Midtrans webhook', [
+                'order_id' => $notification->order_id,
+                'transaction_status' => $notification->transaction_status,
+                'timestamp' => now()->toDateTimeString(),
+            ]);
+
             $transaction = $this->repository->getTransactionByOrderId($notification->order_id);
 
             if (!$transaction) {
+                Log::warning('Webhook: Transaction not found', ['order_id' => $notification->order_id]);
                 return ['status' => 404, 'message' => 'Transaction not found'];
             }
 
+            Log::info('Webhook: Transaction found', [
+                'transaction_id' => $transaction->id,
+                'current_status' => $transaction->status,
+                'order_id' => $notification->order_id,
+            ]);
+
             if ($transaction->status === 'success') {
+                Log::info('Webhook: Transaction already processed (idempotency check)', [
+                    'transaction_id' => $transaction->id,
+                    'order_id' => $notification->order_id,
+                ]);
                 return ['status' => 200, 'message' => 'Transaction already processed'];
             }
 
@@ -112,21 +129,71 @@ class MidtransWebhookService implements MidtransWebhookServiceInterface
                         ]);
                     }
                 } else {
+                    // On-demand enrollment logic
                     $existingOnDemandEnrollment = CourseStudent::where('user_id', $transaction->user_id)
                         ->where('course_id', $transaction->course_id)
                         ->where('enrollment_type', 'on_demand')
                         ->first();
                     $pricing = $transaction->pricing;
-                    if ($existingOnDemandEnrollment && $pricing && $pricing->duration) {
-                        $newExpiryDate = (now()->isAfter($existingOnDemandEnrollment->access_expires_at))
-                            ? now()->addDays($pricing->duration)
-                            : Carbon::parse($existingOnDemandEnrollment->access_expires_at)->addDays($pricing->duration);
-                        $existingOnDemandEnrollment->update([
-                            'pricing_id' => $transaction->pricing_id,
-                            'access_expires_at' => $newExpiryDate,
-                            'is_active' => true,
-                        ]);
+
+                    // Determine if this is a lifetime access (duration = null or 0)
+                    $isLifetimeAccess = !$pricing || !$pricing->duration;
+
+                    if ($existingOnDemandEnrollment) {
+                        // Student already has on-demand enrollment for this course
+                        if ($isLifetimeAccess) {
+                            // Lifetime access: set access_expires_at to null
+                            // If already null, do nothing (avoid duplicate webhook issue)
+                            if ($existingOnDemandEnrollment->access_expires_at !== null) {
+                                $existingOnDemandEnrollment->update([
+                                    'pricing_id' => $transaction->pricing_id,
+                                    'access_expires_at' => null,
+                                    'is_active' => true,
+                                ]);
+                                Log::info('Webhook: On-demand lifetime access updated (set to null)', [
+                                    'user_id' => $transaction->user_id,
+                                    'course_id' => $transaction->course_id,
+                                ]);
+                            } else {
+                                // Already has lifetime access (null), skip duplicate creation
+                                Log::info('Webhook: User already has lifetime access (null), skipping duplicate creation', [
+                                    'user_id' => $transaction->user_id,
+                                    'course_id' => $transaction->course_id,
+                                ]);
+                            }
+                        } else {
+                            // Timed access: extend expiry date or set new expiry
+                            $newExpiryDate = null;
+                            if ($pricing && $pricing->duration) {
+                                // Calculate new expiry date based on existing expiry or current time
+                                if (
+                                    $existingOnDemandEnrollment->access_expires_at &&
+                                    now()->isBefore($existingOnDemandEnrollment->access_expires_at)
+                                ) {
+                                    // Existing expiry is in the future, add duration to existing expiry
+                                    $newExpiryDate = Carbon::parse($existingOnDemandEnrollment->access_expires_at)
+                                        ->addDays($pricing->duration);
+                                } else {
+                                    // Existing expiry is past or null, add duration from now
+                                    $newExpiryDate = now()->addDays($pricing->duration);
+                                }
+                            }
+                            // If pricing has no duration (lifetime), newExpiryDate stays null
+                            $existingOnDemandEnrollment->update([
+                                'pricing_id' => $transaction->pricing_id,
+                                'access_expires_at' => $newExpiryDate,
+                                'is_active' => true,
+                            ]);
+                            Log::info('Webhook: On-demand enrollment updated (timed/lifetime access)', [
+                                'user_id' => $transaction->user_id,
+                                'course_id' => $transaction->course_id,
+                                'new_expiry' => $newExpiryDate,
+                                'duration_days' => $pricing->duration,
+                                'is_lifetime' => $isLifetimeAccess,
+                            ]);
+                        }
                     } else {
+                        // No existing enrollment, create new one
                         $accessExpiresAt = null;
                         if ($pricing && $pricing->duration) {
                             $accessExpiresAt = now()->addDays($pricing->duration);
@@ -140,6 +207,12 @@ class MidtransWebhookService implements MidtransWebhookServiceInterface
                             'access_expires_at' => $accessExpiresAt,
                             'enrollment_type' => 'on_demand',
                             'is_active' => true,
+                        ]);
+                        Log::info('Webhook: On-demand enrollment created', [
+                            'user_id' => $transaction->user_id,
+                            'course_id' => $transaction->course_id,
+                            'access_expires_at' => $accessExpiresAt,
+                            'is_lifetime' => $isLifetimeAccess,
                         ]);
                     }
                 }
