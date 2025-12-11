@@ -66,6 +66,9 @@ class CourseRepository implements CourseRepositoryInterface
                 $query->orderBy('position', 'asc');
             },
             'sections.contents.quiz.questions.options',
+            'sections.contents.quiz.quizAttempts' => function ($query) {
+                $query->where('user_id', auth('api')->id());
+            },
             'sections.contents.quiz.quizAttempts.studentAnswers',
             'sections.contents.attachment',
             'sections.contents.video',

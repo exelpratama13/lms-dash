@@ -29,6 +29,10 @@ class FinancialStatsOverviewWidget extends BaseWidget
                 ->description('Pendapatan di bulan berjalan')
                 ->descriptionIcon('heroicon-m-calendar-days')
                 ->color('info'),
+            Stat::make('Total Transaksi', $financialStats['total_transactions'])
+                ->description('Jumlah total transaksi lunas')
+                ->descriptionIcon('heroicon-m-receipt-refund')
+                ->color('warning'),
             Stat::make('Transaksi Hari Ini', $financialStats['todays_transactions'] . 'x')
                 ->description('Jumlah transaksi yang lunas hari ini')
                 ->descriptionIcon('heroicon-m-receipt-percent')

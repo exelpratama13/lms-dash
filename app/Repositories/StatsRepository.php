@@ -60,6 +60,7 @@ class StatsRepository implements StatsRepositoryInterface
                 'todays_transactions' => Transaction::where('is_paid', true)
                                             ->whereDate('created_at', today())
                                             ->count(),
+                'total_transactions' => Transaction::where('is_paid', true)->count(),
             ];
         });
     }

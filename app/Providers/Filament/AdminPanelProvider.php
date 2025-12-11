@@ -19,6 +19,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Filament\Navigation\NavigationGroup;
 use Filament\Support\Assets\Css;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\Support\HtmlString; // Added this line
 use App\Models\User;
 
 class AdminPanelProvider extends PanelProvider
@@ -30,6 +31,14 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(\App\Filament\Pages\Auth\CustomLogin::class)
+            ->brandLogo(
+                fn () => new HtmlString(
+                    '<div style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: inherit;">' .
+                    '<img src="' . asset('images/logo.png') . '" alt="Inovindo Academy Logo" style="height: 2.5rem; width: auto;" />' .
+                    '<span style="font-weight: bold; font-size: 1.25rem; color: #1f2937;">Inovindo Academy</span>' .
+                    '</div>'
+                )
+            )
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -56,7 +65,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 \App\Filament\Widgets\CustomAccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
                 \App\Filament\Widgets\CourseStatsOverviewWidget::class,
                 \App\Filament\Widgets\MostPopularCourseChart::class,
                 \App\Filament\Widgets\ActiveStudentsChart::class,

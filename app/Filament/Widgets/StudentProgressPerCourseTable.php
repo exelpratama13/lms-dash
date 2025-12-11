@@ -91,12 +91,10 @@ class StudentProgressPerCourseTable extends BaseWidget
                         }
                         $percentage = ($record->completed_contents_count / $record->total_contents_count) * 100;
                         return number_format($percentage, 2) . '%';
-                    })
-                    ->sortable(),
+                    }),
                 TextColumn::make('quiz_score')
                     ->label('Nilai Rata-rata Quiz')
-                    ->getStateUsing(fn($record) => number_format($record->average_quiz_score ?? 0, 2))
-                    ->sortable(),
+                    ->getStateUsing(fn($record) => number_format($record->average_quiz_score ?? 0, 2)),
             ])
             ->filters([
                 SelectFilter::make('course_id')

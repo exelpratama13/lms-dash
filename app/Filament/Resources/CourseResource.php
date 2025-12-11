@@ -84,7 +84,8 @@ class CourseResource extends Resource
                                     ->required(),
                                 Toggle::make('is_popular')
                                     ->label('Kursus Populer')
-                                    ->default(false),
+                                    ->default(false)
+                                    ->disabled(fn () => auth()->user()->hasRole('mentor')),
                             ])->columnSpan(1),
 
                         // Right Column
@@ -374,7 +375,21 @@ class CourseResource extends Resource
                 Tables\Columns\IconColumn::make('is_popular')->label('Populer')->boolean(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('category')->label('Kategori')->relationship('category', 'name'),
+                Tables\Filters\SelectFilter::make('category')
+                    ->label('Kategori')
+                    ->relationship('category', 'name'),
+                Tables\Filters\SelectFilter::make('mentor')
+                    ->label('Mentor')
+                    ->options(User::role('mentor')->pluck('name', 'id'))
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (isset($data['value']) && $data['value']) {
+                            $query->whereHas('mentors', function (Builder $mentorQuery) use ($data) {
+                                $mentorQuery->where('user_id', $data['value']);
+                            });
+                        }
+                        return $query;
+                    })
+                    ->disabled(auth()->user()->hasRole('mentor')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
